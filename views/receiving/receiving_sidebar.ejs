@@ -1,0 +1,36 @@
+<!-- views/receiving/receiving_sidebar.ejs -->
+
+<div class="sidebar-container">
+    <div class="sidebar" id="sidebar">
+        <a href="#" style="height: 60px; background-color: #303030">
+            <img src="/images/logo.png" alt="Logo">
+            <span>
+                <h6 class="d-flex align-center ps-2 fw-bold" style="color: #ffbf00; font-family: Times New Roman;">FAR EAST FUEL<br>CORPORATION</h6>
+            </span>
+        </a>
+        <a href="/receiving_dashboard" class="sidebar-link" id="/">
+            <i class="fas fa-th-large"></i>
+            <span class="link-text">Dashboard</span>
+        </a>
+        <a href="/receiving_dashboard/vehicle_tracker" class="sidebar-link" id="/vehicle_tracker">
+            <i class="fa-solid fa-road"></i>
+            <span class="link-text">Vehicle Tracker</span>
+        </a>
+        <a href="/receiving_dashboard/receiving_transactions" class="sidebar-link" id="/receiving_transactions">
+            <i class="fa-solid fa-truck-arrow-right"></i>
+            <span class="link-text">Receiving Transactions</span>
+        </a>
+        <!-- <a href="/dispatching_dashboard/vehicles" class="sidebar-link" id="/vehicles">
+            <i class="fa-solid fa-truck"></i>
+            <span class="link-text">Vehicles</span>
+        </a> -->
+        <a href="/logout">
+            <i class="fa-solid fa-power-off"></i>
+            <span class="link-text">Logout</span>
+        </a>
+    </div>
+    <!-- Toggle Button -->
+    <button onclick="toggleSidebar()" id="toggleButton">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>

@@ -1,0 +1,159 @@
+<!-- views/marketing/type_of_waste.ejs -->
+
+<div class="content">
+    <div class="col-xs-12">
+        <section>
+            <h4>TYPE OF WASTES</h4><br>
+            <div class="container-fluid">
+                <div class="table-container">
+                    <!-- Table Header -->
+                    <div class="table-header">
+                        <div class="form-group d-flex">
+                            <label for="showEntries">Show entries</label>
+                            <select class="form-control" id="showEntries" onchange="changeEntriesPerPage(this)">
+                                <option value="10" <%= entriesPerPage === 10 ? 'selected' : '' %>>10</option>
+                                <option value="25" <%= entriesPerPage === 25 ? 'selected' : '' %>>25</option>
+                                <option value="50" <%= entriesPerPage === 50 ? 'selected' : '' %>>50</option>
+                                <option value="100" <%= entriesPerPage === 100 ? 'selected' : '' %>>100</option>
+                            </select>
+                        </div>
+                        <div class="form-group d-flex">
+                            <input type="text" class="form-control" autocomplete="off" placeholder="Search Type of Waste" id="searchInput" value="<%= searchQuery %>">
+                            <button class="btn btn-success" onclick="performSearch()">
+                                <h6>Search</h6>
+                            </button>
+                        </div>
+                    </div>
+            
+                    <!-- Table -->
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>WASTE ID</th>
+                            <th>WASTE CODE</th>
+                            <th>WASTE DESCRIPTION</th>
+                            <th>TREATMENT PROCESS</th>
+                            <th>CATEGORY</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <% const startIndex = (currentPage - 1) * entriesPerPage; %>
+                        <% typesOfWaste.forEach((typeOfWaste, index) => { %>
+                            <tr>
+                                <td><%= startIndex + index + 1 %></td>
+                                <td><%= typeOfWaste["WASTE ID"] %></td>
+                                <td><%= typeOfWaste["WASTE CODE"] %></td>
+                                <td><%= typeOfWaste["WASTE NAME"] %></td>
+                                <td><%= typeOfWaste["TREATMENT PROCESS"] %></td>
+                                <td><%= typeOfWaste["CATEGORY"] %></td>
+                            </tr>
+                        <% }); %>
+                        </tbody>
+                    </table>
+            
+                    <!-- Pagination -->
+                    <div class="table-pagination">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-end">
+                                <% if (currentPage > 1) { %>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#" onclick="changePage(<%= currentPage - 1 %>)" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                <% } %>
+                                <% for (let i = 1; i <= totalPages; i++) { %>
+                                    <li class="page-item <%= i === currentPage ? 'custom-active' : 'custom-non-active' %>">
+                                        <a class="page-link <%= i === currentPage ? 'bg-success text-white border-success' : 'text-success' %>" href="#" onclick="changePage(<%= i %>)"><%= i %></a>
+                                    </li>
+                                <% } %>
+                                <% if (currentPage < totalPages) { %>
+                                    <li class="page-item">
+                                        <a class="page-link text-success" href="#" onclick="changePage(<%= currentPage + 1 %>)" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                <% } %>
+                            </ul>
+                        </nav>
+                    </div>
+
+                </div>
+            </div>
+            
+        </section>
+    </div>
+</div>
+<script>
+    // Function to change the page
+    function changePage(pageNumber) {
+    const entriesPerPage = document.getElementById('showEntries').value;
+
+    // Make an AJAX request to the server with the updated page number
+    fetch(`/marketing_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.text())
+    .then(data => {
+        // Update the content of the container with the new data
+        const section = document.querySelector('section');
+        if (section) {
+            section.innerHTML = data;
+
+            document.querySelector('.content').style.marginLeft = '0';
+            document.querySelector('.content').style.width = '100%';
+            document.querySelector('.content').style.padding = '0%';
+            updateActiveClass()
+        }
+
+        // Update the URL to reflect the current page
+        const newUrl = `/marketing_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}`;
+        history.pushState({ page: pageNumber, entriesPerPage }, '', newUrl);
+        window.location.reload()
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Handle errors as needed
+    });
+}
+
+function changeEntriesPerPage(selectElement) {
+    const selectedValue = selectElement.value;
+    const currentPage = <%= currentPage %> // Get the current page
+    window.location.href = `/marketing_dashboard/<%= route %>?page=${currentPage}&entriesPerPage=${selectedValue}`;
+}
+
+function performSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const searchQuery = searchInput.value.trim(); // Get the trimmed search query
+    const pageNumber = 1;
+    const entriesPerPage = document.getElementById('showEntries').value;
+
+    // Make an AJAX request to the server with the search query and current page
+    fetch(`/marketing_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}&search=${searchQuery}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.text())
+    .then(data => {
+        // Update the content of the container with the new data
+        const section = document.querySelector('section');
+        if (section) {
+            section.innerHTML = data;
+
+            document.querySelector('.content').style.marginLeft = '0';
+            document.querySelector('.content').style.width = '100%';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Handle errors as needed
+    });
+}
+</script>

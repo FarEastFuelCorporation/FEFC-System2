@@ -1,0 +1,65 @@
+<!-- views/marketing/update_client.ejs -->
+
+<div class="content">
+    <div class="col-xs-12">
+        <!-- client_list -->
+        <section class="marketing" id="client_list_section">
+            <h4>CLIENTS</h4><br>
+            <div id="new_client_form_tab">
+                <h5>UPDATE CLIENT FORM</h5><br>
+                <form id="updateClientForm" action="/dashboard/clients/update" method="post">
+                    <input type="hidden" name="clientId" id="clientId" autocomplete="off" class="form-control" required value="<%= client.clientId %>"><br>
+                    <label for="clientName">
+                        <i class="fa-solid fa-user"></i>
+                        Client
+                        </label><br>
+                    <input type="text" name="clientName" id="clientName" autocomplete="off" class="form-control" required value="<%= client.clientName %>"><br>
+                    <label for="address">
+                        <i class="fa-solid fa-house-user"></i>
+                        Address
+                    </label><br>
+                    <input type="text" name="address" id="address" autocomplete="off" class="form-control" required value="<%= client.address %>"><br>
+                    <label for="natureOfBusiness">
+                        <i class="fa-solid fa-table-list"></i>
+                        Nature of Business
+                    </label><br>
+                    <input type="text" name="natureOfBusiness" id="natureOfBusiness" autocomplete="off" class="form-control" required value="<%= client.natureOfBusiness %>"><br>
+                    <label for="contactNumber">
+                        <i class="fa-solid fa-square-phone"></i>
+                        Contact Number
+                    </label><br>
+                    <input type="text" name="contactNumber" id="contactNumber" autocomplete="off" class="form-control" required value="<%= client.contactNumber %>"><br>
+                    <label for="billerName">
+                        <i class="fa-solid fa-user"></i>
+                        Biller Name
+                        </label><br>
+                    <input type="text" name="billerName" id="billerName" autocomplete="off" class="form-control" required value="<%= client.billerName %>"><br>
+                    <label for="billerAddress">
+                        <i class="fa-solid fa-house-user"></i>
+                        Biller Address
+                    </label><br>
+                    <input type="text" name="billerAddress" id="billerAddress" autocomplete="off" class="form-control" required value="<%= client.billerAddress %>"><br>
+                    <label for="billerContactPerson">
+                        <i class="fa-solid fa-square-phone"></i>
+                        Biller Contact Person
+                    </label><br>
+                    <input type="text" name="billerContactPerson" id="billerContactPerson" autocomplete="off" class="form-control" required value="<%= client.billerContactPerson %>"><br>    
+                    <label for="billerContactNumber">
+                        <i class="fa-solid fa-square-phone"></i>
+                        Biller Contact Number
+                    </label><br>
+                    <input type="text" name="billerContactNumber" id="billerContactNumber" autocomplete="off" class="form-control" required value="<%= client.billerContactNumber %>"><br>
+                    <div class="buttons">
+                        <button type="submit" id="submit_btn" class="form-control" >
+                            Submit
+                        </button>
+                        <button type="reset" id="reset" class="form-control" >
+                            Clear
+                        </button>
+                    </div>    
+                </form>
+            </div>
+            
+        </section>
+    </div>
+</div>

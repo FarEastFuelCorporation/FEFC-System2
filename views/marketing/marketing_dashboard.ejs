@@ -1,0 +1,284 @@
+<!-- views/marketing/marketing_dashboard.ejs -->
+
+<div class="content">
+    <div class="col-xs-12">
+        <!-- dashboard -->
+        <section id="marketing_dashboard">
+            <h4>DASHBOARD</h4><br>
+            <h5>BOOKING SUMMARY</h5>
+            <div class="row mb-3">
+                <div class="cards col-9 booked">
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="booked_transactions"><%= counts.booked %></div>
+                            <div class="card-name">Booked</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-book-bookmark"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="for_schedule"><%= counts.forSchedule %></div>
+                            <div class="card-name">For Schedule</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-calendar-days"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="for_hauling"><%= counts.forHauling %></div>
+                            <div class="card-name">For Hauling</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-truck"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="for_receiving"><%= counts.forReceiving %></div>
+                            <div class="card-name">For Receiving</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-truck-ramp-box"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="for_warehousing"><%= counts.forWarehousing %></div>
+                            <div class="card-name">For Warehousing</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-warehouse"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="for_sorting"><%= counts.forSorting %></div>
+                            <div class="card-name">For Sorting</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-shuffle"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="for_treatment"><%= counts.forTreatment %></div>
+                            <div class="card-name">For Treatment</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-fire-burner"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="for_certification"><%= counts.forCertification %></div>
+                            <div class="card-name">For Certification</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-stamp"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="for_billing"><%= counts.forBilling %></div>
+                            <div class="card-name">For Billing</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-file-invoice"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="for_billing_distribution"><%= counts.forBillingDistribution %></div>
+                            <div class="card-name">For Billing Distribution</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-motorcycle"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="for_collection"><%= counts.forCollection %></div>
+                            <div class="card-name">For Collection</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="finished"><%= counts.finished %></div>
+                            <div class="card-name">Finished</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="generated_income"><%= counts.finished %></div>
+                            <div class="card-name">Generated Income</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-sack-dollar"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart col-3">
+                    <div style="position: relative; width: calc(100% - 20px);">
+                        <div id="pieChart">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="monthly_transactions">
+            <h5>MONTHLY TRANSACTION COMPARISON</h5>
+            <div class="col-4" style="position: relative; padding: 10px; background-color: #fff; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 8px;">
+                <div id="monthlyBarChart">
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+<script>
+    let marketingTransactionsByMonth = [];
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            // Make parallel AJAX requests using Promise.all
+            const [marketingTransactionsByMonthResponse] = await Promise.all([
+                fetch('/requests/getMarketingTransactionsByMonth', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }),
+            ]);
+
+            // Check for errors in marketing transaction response
+            if (!marketingTransactionsByMonthResponse.ok) {
+                throw new Error('Network response was not ok for marketing transactions');
+            }
+
+            // Get JSON data for vehicles marketing transactions and vehicles
+            marketingTransactionsByMonth = await marketingTransactionsByMonthResponse.json();
+
+            generatePieChart();
+            generateBarChart();
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    });
+
+    function generatePieChart() {
+        const for_schedule = parseInt(document.getElementById("for_schedule").innerText);
+        const for_hauling = parseInt(document.getElementById("for_hauling").innerText);
+        const for_receiving = parseInt(document.getElementById("for_receiving").innerText);
+        const for_warehousing = parseInt(document.getElementById("for_warehousing").innerText);
+        const for_sorting = parseInt(document.getElementById("for_sorting").innerText);
+        const for_treatment = parseInt(document.getElementById("for_treatment").innerText);
+        const for_certification = parseInt(document.getElementById("for_certification").innerText);
+        const for_billing = parseInt(document.getElementById("for_billing").innerText);
+        const for_billing_distribution = parseInt(document.getElementById("for_billing_distribution").innerText);
+        const for_collection = parseInt(document.getElementById("for_collection").innerText);
+        const finished = parseInt(document.getElementById("finished").innerText);
+
+        var options = {
+            series: [for_schedule, for_hauling, for_receiving, for_warehousing, for_sorting, for_treatment, for_certification, for_billing, for_billing_distribution, for_collection, finished],
+            chart: {
+                type: 'pie',
+            },
+            plotOptions: {
+                pie: {
+                    startAngle: 0,
+                    endAngle: 360
+                }
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            fill: {
+                type: 'gradient',
+            },
+            legend: {
+                show: true,
+                position: "left",
+                fontSize: '14px',
+                formatter: function (seriesName, opts) {
+                    var seriesValue = opts.w.globals.series[opts.seriesIndex];
+                    var totalValue = opts.w.globals.series.reduce((acc, val) => acc + val, 0);
+                    var percentage = ((seriesValue / totalValue) * 100).toFixed(2);
+                    return `${percentage}% ${seriesName}`;
+                },
+                labels: {
+                    useSeriesColors: false,
+                },
+            },
+            labels: ["For Schedule", "For Hauling", "For Receiving", "For Warehousing", "For Sorting", "For Treatment", "For Certification", "For Billing", "For Billing Distribution", "For Collection", "Finished"],
+            colors: [
+                "#FF6961", // Pastel Red
+                "#FFB347", // Pastel Orange
+                "#FFD1DC", // Pastel Pink
+                "#FFFACD", // Pastel Yellow
+                "#98FF98", // Pastel Mint
+                "#ADD8E6", // Pastel Blue
+                "#AFEEEE", // Pastel Turquoise
+                "#B19CD9", // Pastel Purple
+                "#E6E6FA", // Pastel Lavender
+                "#FFDAB9", // Pastel Peach
+                "#98FB98"  // Pastel Green
+                ],
+            responsive: [{
+                breakpoint: 500,
+                options: {
+                    chart: {
+                        width: '100%',
+                        maxHeight: '70%',
+                    },
+                }
+            }]
+        };
+
+        var chart = new ApexCharts(pieChart, options);
+        chart.render();
+    }
+
+    function generateBarChart() {
+        var seriesData = marketingTransactionsByMonth.pending.map(data => data.count);
+        var labelsData = marketingTransactionsByMonth.pending.map(data => formatLabel(data.month, data.year));
+
+        var options = {
+            chart: {
+                type: 'bar',
+            },
+            series: [{
+                name: 'Number of Transactions',
+                data: seriesData,
+            }],
+            xaxis: {
+                categories: labelsData,
+                labels: {
+                    datetimeUTC: false,
+                }
+            },
+            yaxis: {
+                min: 0,
+            },
+        };
+
+        var monthlyBarChart = new ApexCharts(document.getElementById('monthlyBarChart'), options);
+        monthlyBarChart.render();
+
+        function formatLabel(monthData, yearData) {
+            const date = new Date(`${yearData}-${monthData}-01`);
+            const month = date.toLocaleDateString('en-US', { month: 'long' });
+            const year = date.getFullYear();
+            return `${month} ${year}`;
+        }
+    }
+
+</script>

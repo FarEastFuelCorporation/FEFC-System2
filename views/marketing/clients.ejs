@@ -1,0 +1,436 @@
+<!-- views/marketing/clients.ejs -->
+
+<div class="content">
+    <div class="col-xs-12">
+        <section>
+            <h4>CLIENTS</h4><br>
+            <div>
+                <label class="d-flex gap-3">
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newClientModal">
+                        <h6>NEW CLIENT FORM</h6>
+                    </button>
+                </label>
+            </div>
+            <% if (successMessage) { %>
+                <div class="alert alert-success" role="alert">
+                    <%= successMessage %>
+                </div>
+            <% } %>
+            <div class="container-fluid">
+                <div class="table-container">
+                    <!-- Table Header -->
+                    <div class="table-header">
+                        <div class="form-group d-flex">
+                            <label for="showEntries">Show entries</label>
+                            <select class="form-control" id="showEntries" onchange="changeEntriesPerPage(this)">
+                                <option value="10" <%= entriesPerPage === 10 ? 'selected' : '' %>>10</option>
+                                <option value="25" <%= entriesPerPage === 25 ? 'selected' : '' %>>25</option>
+                                <option value="50" <%= entriesPerPage === 50 ? 'selected' : '' %>>50</option>
+                                <option value="100" <%= entriesPerPage === 100 ? 'selected' : '' %>>100</option>
+                            </select>
+                        </div>
+                        <div class="form-group d-flex">
+                            <input type="text" class="form-control" autocomplete="off" placeholder="Search Client" id="searchInput" value="<%= searchQuery %>">
+                            <button class="btn btn-success" onclick="performSearch()">
+                                <h6>Search</h6>
+                            </button>
+                        </div>
+                    </div>
+            
+                    <!-- Table -->
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>CLIENT ID</th>
+                                <th>CLIENT</th>
+                                <th>ADDRESS</th>
+                                <th>NATURE OF BUSINESS</th>
+                                <th>CONTACT NUMBER</th>
+                                <th>BILLER NAME</th>
+                                <th>BILLER ADDRESS</th>
+                                <th>BILLER CONTACT PERSON</th>
+                                <th>BILLER CONTACT NUMBER</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% const startIndex = (currentPage - 1) * entriesPerPage; %>
+                            <% clients.forEach((client, index) => { %>
+                                <tr>
+                                    <td><%= startIndex + index + 1 %></td>
+                                    <td><%= client["CLIENT ID"] %></td>
+                                    <td><%= client["CLIENT NAME"] %></td>
+                                    <td><%= client["ADDRESS"] %></td>
+                                    <td><%= client["NATURE OF BUSINESS"] %></td>
+                                    <td><%= client["CONTACT NUMBER"] %></td>
+                                    <td><%= client["BILLER NAME"] %></td>
+                                    <td><%= client["BILLER ADDRESS"] %></td>
+                                    <td><%= client["BILLER CONTACT PERSON"] %></td>
+                                    <td><%= client["BILLER CONTACT NUMBER"] %></td>
+                                    <td>
+                                        <!-- Update button -->
+                                        <button type="button" id="updateBtn" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#updateClientModal" onclick="getClientData ('<%= client.clientId %>')">
+                                            <h6>Update</h6>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+            
+                    <!-- Pagination -->
+                    <div class="table-pagination">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-end">
+                                <% if (currentPage > 1) { %>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#" onclick="changePage(<%= currentPage - 1 %>)" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                <% } %>
+                                <% for (let i = 1; i <= totalPages; i++) { %>
+                                    <li class="page-item <%= i === currentPage ? 'custom-active' : 'custom-non-active' %>">
+                                        <a class="page-link <%= i === currentPage ? 'bg-success text-white border-success' : 'text-success' %>" href="#" onclick="changePage(<%= i %>)"><%= i %></a>
+                                    </li>
+                                <% } %>
+                                <% if (currentPage < totalPages) { %>
+                                    <li class="page-item">
+                                        <a class="page-link text-success" href="#" onclick="changePage(<%= currentPage + 1 %>)" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                <% } %>
+                            </ul>
+                        </nav>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <form id="newClientForm" action="/marketing_dashboard/clients/new" method="post">
+        <div class="modal" id="newClientModal" style="height: 100vh; width: 100%;">
+            <div class="modal-dialog  modal-lg" style="width: 100% !important;">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">NEW CLIENT FORM</h4>
+                        <button type="button" id="closeNewBtn" class="close btn btn-danger" data-dismiss="modal">&times;</button>
+                    </div>
+        
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="clientName">
+                                    <i class="fa-solid fa-user"></i>
+                                    Client
+                                    </label><br>
+                                <input type="text" name="clientName" id="clientName" autocomplete="off" class="form-control" required placeholder="Input Client's Name...">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="address">
+                                    <i class="fa-solid fa-house-user"></i>
+                                    Address
+                                </label>
+                                <input type="text" name="address" id="address" autocomplete="off" class="form-control" required placeholder="Input Client's Address...">
+                            </div>
+                        </div>
+                        <div class="row gap-3 mb-3">
+                            <div class="col">
+                                <label for="natureOfBusiness">
+                                    <i class="fa-solid fa-table-list"></i>
+                                    Nature of Business
+                                </label><br>
+                                <input type="text" name="natureOfBusiness" id="natureOfBusiness" autocomplete="off" class="form-control" required placeholder="Input Client's Nature of Business...">
+                            </div>
+                            <div class="col">
+                                <label for="contactNumber">
+                                    <i class="fa-solid fa-square-phone"></i>
+                                    Contact Number
+                                </label><br>
+                                <input type="text" name="contactNumber" id="contactNumber" autocomplete="off" class="form-control" required placeholder="Input Client's Contact Number...">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="billerName">
+                                    <i class="fa-solid fa-user"></i>
+                                    Biller Name
+                                    </label><br>
+                                <input type="text" name="billerName" id="billerName" autocomplete="off" class="form-control" required placeholder="Input Biller's Name...">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="billerAddress">
+                                    <i class="fa-solid fa-house-user"></i>
+                                    Biller Address
+                                </label><br>
+                                <input type="text" name="billerAddress" id="billerAddress" autocomplete="off" class="form-control" required placeholder="Input Biller's Address...">
+                            </div>
+                        </div>
+                        <div class="row mb-3 gap-3">
+                            <div class="col">
+                                <label for="billerContactPerson">
+                                    <i class="fa-solid fa-square-phone"></i>
+                                    Biller Contact Person
+                                </label><br>
+                                <input type="text" name="billerContactPerson" id="billerContactPerson" autocomplete="off" class="form-control" required placeholder="Input Biller's Contact Person...">    
+                            </div>
+                            <div class="col mb-3">
+                                <label for="billerContactNumber">
+                                    <i class="fa-solid fa-square-phone"></i>
+                                    Biller Contact Number
+                                </label><br>
+                                <input type="text" name="billerContactNumber" id="billerContactNumber" autocomplete="off" class="form-control" required placeholder="Input Biller's Contact Number...">
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Modal Footer -->
+                    <div class="modal-footer">
+                        <button type="submit" id="submit_btn" class="btn btn-success">
+                            Submit
+                        </button>
+                        <button type="reset" id="reset" class="btn btn-danger">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <form id="updateClientForm" action="/marketing_dashboard/clients/update" method="post">
+        <div class="modal" id="updateClientModal" style="height: 100vh; width: 100%;">
+            <div class="modal-dialog  modal-lg" style="width: 100% !important;">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">UPDATE CLIENT FORM</h4>
+                        <button type="button" id="closeUpdateBtn" class="close btn btn-danger" data-dismiss="modal">&times;</button>
+                    </div>
+        
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <input type="hidden" name="clientId" id="clientId">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="clientName">
+                                    <i class="fa-solid fa-user"></i>
+                                    Client
+                                    </label><br>
+                                <input type="text" name="clientName" id="clientName" autocomplete="off" class="form-control" required placeholder="Input Client's Name...">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="address">
+                                    <i class="fa-solid fa-house-user"></i>
+                                    Address
+                                </label>
+                                <input type="text" name="address" id="address" autocomplete="off" class="form-control" required placeholder="Input Client's Address...">
+                            </div>
+                        </div>
+                        <div class="row gap-3 mb-3">
+                            <div class="col">
+                                <label for="natureOfBusiness">
+                                    <i class="fa-solid fa-table-list"></i>
+                                    Nature of Business
+                                </label><br>
+                                <input type="text" name="natureOfBusiness" id="natureOfBusiness" autocomplete="off" class="form-control" required placeholder="Input Client's Nature of Business...">
+                            </div>
+                            <div class="col">
+                                <label for="contactNumber">
+                                    <i class="fa-solid fa-square-phone"></i>
+                                    Contact Number
+                                </label><br>
+                                <input type="text" name="contactNumber" id="contactNumber" autocomplete="off" class="form-control" required placeholder="Input Client's Contact Number...">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="billerName">
+                                    <i class="fa-solid fa-user"></i>
+                                    Biller Name
+                                    </label><br>
+                                <input type="text" name="billerName" id="billerName" autocomplete="off" class="form-control" required placeholder="Input Biller's Name...">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="billerAddress">
+                                    <i class="fa-solid fa-house-user"></i>
+                                    Biller Address
+                                </label><br>
+                                <input type="text" name="billerAddress" id="billerAddress" autocomplete="off" class="form-control" required placeholder="Input Biller's Address...">
+                            </div>
+                        </div>
+                        <div class="row mb-3 gap-3">
+                            <div class="col">
+                                <label for="billerContactPerson">
+                                    <i class="fa-solid fa-square-phone"></i>
+                                    Biller Contact Person
+                                </label><br>
+                                <input type="text" name="billerContactPerson" id="billerContactPerson" autocomplete="off" class="form-control" required placeholder="Input Biller's Contact Person...">    
+                            </div>
+                            <div class="col mb-3">
+                                <label for="billerContactNumber">
+                                    <i class="fa-solid fa-square-phone"></i>
+                                    Biller Contact Number
+                                </label><br>
+                                <input type="text" name="billerContactNumber" id="billerContactNumber" autocomplete="off" class="form-control" required placeholder="Input Biller's Contact Number...">
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Modal Footer -->
+                    <div class="modal-footer">
+                        <button type="submit" id="submit_btn" class="btn btn-success">
+                            Update
+                        </button>
+                        <button type="reset" id="reset" class="btn btn-danger">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+        // Function to change the page
+        function changePage(pageNumber) {
+        const entriesPerPage = document.getElementById('showEntries').value;
+
+        // Make an AJAX request to the server with the updated page number
+        fetch(`/marketing_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.text())
+        .then(data => {
+            // Update the content of the container with the new data
+            const section = document.querySelector('section');
+            if (section) {
+                section.innerHTML = data;
+
+                document.querySelector('.content').style.marginLeft = '0';
+                document.querySelector('.content').style.width = '100%';
+                document.querySelector('.content').style.padding = '0%';
+                updateActiveClass()
+            }
+
+            // Update the URL to reflect the current page
+            const newUrl = `/marketing_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}`;
+            history.pushState({ page: pageNumber, entriesPerPage }, '', newUrl);
+            window.location.reload()
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Handle errors as needed
+        });
+    }
+
+    function changeEntriesPerPage(selectElement) {
+        const selectedValue = selectElement.value;
+        const currentPage = <%= currentPage %> // Get the current page
+        window.location.href = `/marketing_dashboard/<%= route %>?page=${currentPage}&entriesPerPage=${selectedValue}`;
+    }
+
+    function performSearch() {
+        const searchInput = document.getElementById('searchInput');
+        const searchQuery = searchInput.value.trim(); // Get the trimmed search query
+        const pageNumber = 1;
+        const entriesPerPage = document.getElementById('showEntries').value;
+
+        // Make an AJAX request to the server with the search query and current page
+        fetch(`/marketing_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}&search=${searchQuery}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.text())
+        .then(data => {
+            // Update the content of the container with the new data
+            const section = document.querySelector('section');
+            if (section) {
+                section.innerHTML = data;
+
+                document.querySelector('.content').style.marginLeft = '0';
+                document.querySelector('.content').style.width = '100%';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Handle errors as needed
+        });
+    }
+</script>
+<script>
+        document.getElementById("closeUpdateBtn").addEventListener("click", () => {
+            document.getElementById("updateClientModal").style.display = "none";
+            document.querySelector("body").classList.remove("modal-open");
+            document.querySelector("body").style = "";
+            document.querySelector(".modal-backdrop").remove();
+        })
+        document.getElementById("closeNewBtn").addEventListener("click", () => {
+            document.getElementById("newClientModal").style.display = "none";
+            document.querySelector("body").classList.remove("modal-open");
+            document.querySelector("body").style = "";
+            document.querySelector(".modal-backdrop").remove();
+        })
+
+        let clientsData = [];
+    
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Make parallel AJAX requests using Promise.all
+                const [ clientsResponse ] = await Promise.all([
+                    fetch('/requests/getClients', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }),
+                ]);
+
+                // Check for errors in marketing transaction response
+                if (!clientsResponse.ok) {
+                    throw new Error('Network response was not ok for clients');
+                }
+
+                // Get JSON data for vehicles marketing transactions and vehicles
+                clientsData = await clientsResponse.json();
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        });
+
+        function getClientData(clientIdData) {
+            const updateClientModal = document.getElementById("updateClientModal");
+            for(let x = 0; x < clientsData.length; x++){
+                if(clientsData[x].clientId === clientIdData){
+                    updateClientModal.querySelector("#clientId").value = clientsData[x].clientId;
+                    updateClientModal.querySelector("#clientName").value = clientsData[x].clientName;
+                    updateClientModal.querySelector("#address").value = clientsData[x].address;
+                    updateClientModal.querySelector("#natureOfBusiness").value = clientsData[x].natureOfBusiness;
+                    updateClientModal.querySelector("#contactNumber").value = clientsData[x].contactNumber;
+                    updateClientModal.querySelector("#billerName").value = clientsData[x].billerName;
+                    updateClientModal.querySelector("#billerAddress").value = clientsData[x].billerAddress;
+                    updateClientModal.querySelector("#billerContactPerson").value = clientsData[x].billerContactPerson;
+                    updateClientModal.querySelector("#billerContactNumber").value = clientsData[x].billerContactNumber;
+                }
+            }
+    }
+
+</script>

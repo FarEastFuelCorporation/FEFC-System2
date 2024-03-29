@@ -1,0 +1,1529 @@
+<!-- views/marketing/booked_transactions.ejs -->
+
+<div class="content">
+    <section class="mb-3">
+        <h4>BOOKED TRANSACTIONS</h4><br>
+        <% if (successMessage) { %>
+            <div class="alert alert-success" role="alert">
+                <%= successMessage %>
+            </div>
+        <% } %>
+        <div class="accordion mb-3" id="accordionExample">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        <h2 id="month_header"></h2>
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                    <div class="accordion-body">
+                        <table class="calendar">
+                            <thead>
+                                <tr>
+                                    <th>SUNDAY</th>
+                                    <th>MONDAY</th>
+                                    <th>TUESDAY</th>
+                                    <th>WEDNESDAY</th>
+                                    <th>THURSDAY</th>
+                                    <th>FRIDAY</th>
+                                    <th>SATURDAY</th>
+                                </tr>
+                            </thead>
+                            <tbody id="calendar_days"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="table-header">
+            <div class="form-group d-flex">
+                <label for="showEntries">Show entries</label>
+                <select class="form-control" id="showEntries" onchange="changeEntriesPerPage(this)">
+                    <option value="10" <%= entriesPerPage === 10 ? 'selected' : '' %>>10</option>
+                    <option value="25" <%= entriesPerPage === 25 ? 'selected' : '' %>>25</option>
+                    <option value="50" <%= entriesPerPage === 50 ? 'selected' : '' %>>50</option>
+                    <option value="100" <%= entriesPerPage === 100 ? 'selected' : '' %>>100</option>
+                </select>
+            </div>
+            <div class="form-group d-flex">
+                <input type="text" class="form-control" autocomplete="off" placeholder="Search Client" id="searchInput" value="<%= searchQuery %>">
+                <button class="btn btn-success" onclick="performSearch()">
+                    <h6>Search</h6>
+                </button>
+            </div>
+        </div>
+
+        <div>
+            <div class="accordion" id="accordionExample">
+                <% const startIndex = (currentPage - 1) * entriesPerPage; %>
+                <% paginatedTransactions.forEach((transaction, index) => { %>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= startIndex + index + 1 %>" aria-expanded="true" aria-controls="collapse<%= startIndex + index + 1 %>">
+                                <%= transaction.mtfNumber %> - <%= transaction.haulingDate %> - <%= transaction.haulingTime %> - <%= transaction.Client.clientName %>
+                            </button>
+                        </h2>
+                        <div id="collapse<%= startIndex + index + 1 %>" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <ul class="timeline">
+                                    <% if (!transaction.logisticsTransactionExists && transaction.submitTo == "LOGISTICS") { %>
+                                        <li>
+                                            <i class="fa fa-solid fa-book bg-blue"></i>
+                                            <div class="timeline-item">
+                                                <span class="time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                                </span>
+                                                <h3 class="timeline-header fw-bold">
+                                                    Booked
+                                                </h3>
+                                                <div class="timeline-body">
+                                                    Waste Category: <span><%= transaction.WasteCategory.wasteCategory %></span><br>
+                                                    Waste Code: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteCode %></span><br>
+                                                    <% if (transaction.WasteCategory.id == 1) { %>
+                                                        Waste Type: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteDescription %></span><br>
+                                                    <% } %>
+                                                    Waste Name: <span><%= transaction.QuotationWaste.wasteName %></span><br>
+                                                    Type of Vehicle: <span><%= transaction.QuotationTransportation.VehicleType.typeOfVehicle %></span><br>
+                                                    Remarks: <span><%= transaction.remarks %></span><br>
+                                                    Booked By: <span><%= transaction.Employee.firstName %> <%= transaction.Employee.lastName %></span><br>
+                                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#updateTransactionModal" onclick="updateData('<%= transaction.id %>')">
+                                                        <h6>Update</h6>
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger" onclick="deleteData('<%= transaction.id %>')">
+                                                        <h6>Delete</h6>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-line"></div>
+                                        </li>
+                                        <li>
+                                            <i class="fa fa-solid fa-calendar-days bg-yellow"></i>
+                                            <div class="timeline-item">
+                                                <span class="time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                                </span>
+                                                <h3 class="timeline-header fw-bold">
+                                                    For Schedule
+                                                </h3>
+                                                <div class="timeline-body">
+                                                    Pending <br>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-line"></div>
+                                        </li>
+                                    <% } else if (!transaction.logisticsTransactionExists && transaction.submitTo == "RECEIVING") { %>
+                                        <li>
+                                            <i class="fa fa-solid fa-book bg-blue"></i>
+                                            <div class="timeline-item">
+                                                <span class="time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                                </span>
+                                                <h3 class="timeline-header fw-bold">
+                                                    Booked
+                                                </h3>
+                                                <div class="timeline-body">
+                                                    Waste Category: <span><%= transaction.WasteCategory.wasteCategory %></span><br>
+                                                    Waste Code: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteCode %></span><br>
+                                                    <% if (transaction.WasteCategory.id == 1) { %>
+                                                        Waste Type: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteDescription %></span><br>
+                                                    <% } %>
+                                                    Waste Name: <span><%= transaction.QuotationWaste.wasteName %></span><br>
+                                                    Type of Vehicle: <span><%= transaction.QuotationTransportation.VehicleType.typeOfVehicle %></span><br>
+                                                    Remarks: <span><%= transaction.remarks %></span><br>
+                                                    Booked By: <span><%= transaction.Employee.firstName %> <%= transaction.Employee.lastName %></span><br>
+                                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#updateTransactionModal" onclick="updateData('<%= transaction.id %>')">
+                                                        <h6>Update</h6>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-line"></div>
+                                        </li>
+                                        <li>
+                                            <i class="fa fa-solid fa-truck-ramp-box bg-yellow"></i>
+                                            <div class="timeline-item">
+                                                <span class="time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                                </span>
+                                                <h3 class="timeline-header fw-bold">
+                                                    For Receiving
+                                                </h3>
+                                                <div class="timeline-body">
+                                                    Pending <br>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-line"></div>
+                                        </li>
+                                    <% } else if (transaction.logisticsTransactionExists && !transaction.dispatchLogisticsTransactionExists) { %>
+                                        <li>
+                                            <i class="fa fa-solid fa-book bg-blue"></i>
+                                            <div class="timeline-item">
+                                                <span class="time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                                </span>
+                                                <h3 class="timeline-header fw-bold">
+                                                    Booked
+                                                </h3>
+                                                <div class="timeline-body">
+                                                    Waste Category: <span><%= transaction.WasteCategory.wasteCategory %></span><br>
+                                                    Waste Code: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteCode %></span><br>
+                                                    <% if (transaction.WasteCategory.id == 1) { %>
+                                                        Waste Type: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteDescription %></span><br>
+                                                    <% } %>
+                                                    Waste Name: <span><%= transaction.QuotationWaste.wasteName %></span><br>
+                                                    Type of Vehicle: <span><%= transaction.QuotationTransportation.VehicleType.typeOfVehicle %></span><br>
+                                                    Remarks: <span><%= transaction.remarks %></span><br>
+                                                    Booked By: <span><%= transaction.Employee.firstName %> <%= transaction.Employee.lastName %></span><br>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-line"></div>
+                                        </li>
+                                    <li>
+                                        <i class="fa fa-solid fa-calendar-days bg-blue"></i>
+                                        <div class="timeline-item">
+                                            <span class="time">
+                                                <i class="fa fa-clock-o"></i>
+                                                <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                            </span>
+                                            <h3 class="timeline-header fw-bold">
+                                                Scheduled
+                                            </h3>
+                                            <div class="timeline-body">
+                                                Vehicle: <span><%= transaction.LogisticsTransaction[0].vehicleName %></span><br>
+                                                Plate #: <span><%= transaction.LogisticsTransaction[0].plateNumber %></span><br>
+                                                Driver: <span><%= transaction.LogisticsTransaction[0].Driver.firstName %> <%= transaction.LogisticsTransaction[0].Driver.lastName %></span><br>
+                                                Truck Helper: <span><%= transaction.LogisticsTransaction[0].LogisticsTransactionHelper[0].Employee.firstName %> <%= transaction.LogisticsTransaction[0].LogisticsTransactionHelper[0].Employee.lastName %></span><br>
+                                                Departure Date: <span><%= transaction.LogisticsTransaction[0].departureDate %></span><br>
+                                                Departure Time: <span><%= transaction.LogisticsTransaction[0].departureTime %></span><br>
+                                                Scheduled By: <span><%= transaction.LogisticsTransaction[0].Employee.firstName %> <%= transaction.LogisticsTransaction[0].Employee.lastName %></span><br>
+                                            </div>
+                                        </div>
+                                        <div class="timeline-line"></div>
+                                    </li>
+                                    <li>
+                                        <i class="fa fa-solid fa-calendar-check bg-yellow"></i>
+                                        <div class="timeline-item">
+                                            <span class="time">
+                                                <i class="fa fa-clock-o"></i>
+                                                <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                            </span>
+                                            <h3 class="timeline-header fw-bold">
+                                                For Dispatching
+                                            </h3>
+                                            <div class="timeline-body">
+                                                Pending <br>
+                                            </div>
+                                        </div>
+                                        <div class="timeline-line"></div>
+                                    </li>
+                                    <% } else if (transaction.logisticsTransactionExists && transaction.dispatchLogisticsTransactionExists) { %>
+                                        <li>
+                                            <i class="fa fa-solid fa-book bg-blue"></i>
+                                            <div class="timeline-item">
+                                                <span class="time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                                </span>
+                                                <h3 class="timeline-header fw-bold">
+                                                    Booked
+                                                </h3>
+                                                <div class="timeline-body">
+                                                    Waste Category: <span><%= transaction.WasteCategory.wasteCategory %></span><br>
+                                                    Waste Code: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteCode %></span><br>
+                                                    <% if (transaction.WasteCategory.id == 1) { %>
+                                                        Waste Type: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteDescription %></span><br>
+                                                    <% } %>
+                                                    Waste Name: <span><%= transaction.QuotationWaste.wasteName %></span><br>
+                                                    Type of Vehicle: <span><%= transaction.QuotationTransportation.VehicleType.typeOfVehicle %></span><br>
+                                                    Remarks: <span><%= transaction.remarks %></span><br>
+                                                    Booked By: <span><%= transaction.Employee.firstName %> <%= transaction.Employee.lastName %></span><br>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-line"></div>
+                                        </li>
+                                        <li>
+                                            <i class="fa fa-solid fa-calendar-days bg-blue"></i>
+                                            <div class="timeline-item">
+                                                <span class="time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                                </span>
+                                                <h3 class="timeline-header fw-bold">
+                                                    Scheduled
+                                                </h3>
+                                                <div class="timeline-body">
+                                                    Vehicle: <span><%= transaction.LogisticsTransaction[0].vehicleName %></span><br>
+                                                    Plate #: <span><%= transaction.LogisticsTransaction[0].plateNumber %></span><br>
+                                                    Driver: <span><%= transaction.LogisticsTransaction[0].Driver.firstName %> <%= transaction.LogisticsTransaction[0].Driver.lastName %></span><br>
+                                                    Truck Helper: <span><%= transaction.LogisticsTransaction[0].LogisticsTransactionHelper[0].Employee.firstName %> <%= transaction.LogisticsTransaction[0].LogisticsTransactionHelper[0].Employee.lastName %></span><br>
+                                                    Departure Date: <span><%= transaction.LogisticsTransaction[0].departureDate %></span><br>
+                                                    Departure Time: <span><%= transaction.LogisticsTransaction[0].departureTime %></span><br>
+                                                    Scheduled By: <span><%= transaction.LogisticsTransaction[0].Employee.firstName %> <%= transaction.LogisticsTransaction[0].Employee.lastName %></span><br>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-line"></div>
+                                        </li>
+                                        <li>
+                                            <i class="fa fa-solid fa-calendar-check bg-blue"></i>
+                                            <div class="timeline-item">
+                                                <span class="time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                                </span>
+                                                <h3 class="timeline-header fw-bold">
+                                                    Dispatched
+                                                </h3>
+                                                <div class="timeline-body">
+                                                    Dispatched Date: <span><%= transaction.LogisticsTransaction[0].DispatchLogisticsTransaction[0].dispatchedDate %></span><br>
+                                                    Dispatched Time: <span><%= transaction.LogisticsTransaction[0].DispatchLogisticsTransaction[0].dispatchedTime %></span><br>
+                                                    Dispatched By: <span><%= transaction.LogisticsTransaction[0].DispatchLogisticsTransaction[0].Employee.firstName %> <%= transaction.LogisticsTransaction[0].DispatchLogisticsTransaction[0].Employee.lastName %></span><br>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-line"></div>
+                                        </li>
+                                        <li>
+                                            <i class="fa fa-solid fa-truck-ramp-box bg-yellow"></i>
+                                            <div class="timeline-item">
+                                                <span class="time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                                </span>
+                                                <h3 class="timeline-header fw-bold">
+                                                    For Receiving
+                                                </h3>
+                                                <div class="timeline-body">
+                                                    Pending <br>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-line"></div>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+        <!-- Pagination -->
+        <div class="table-pagination">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-end">
+                    <% if (currentPage > 1) { %>
+                        <li class="page-item">
+                            <a class="page-link" href="#" onclick="changePage(<%= currentPage - 1 %>)" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    <% } %>
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <%= i === currentPage ? 'custom-active' : 'custom-non-active' %>">
+                            <a class="page-link <%= i === currentPage ? 'bg-success text-white border-success' : 'text-success' %>" href="#" onclick="changePage(<%= i %>)"><%= i %></a>
+                        </li>
+                    <% } %>
+                    <% if (currentPage < totalPages) { %>
+                        <li class="page-item">
+                            <a class="page-link text-success" href="#" onclick="changePage(<%= currentPage + 1 %>)" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    <% } %>
+                </ul>
+            </nav>
+        </div>
+    </section>
+
+    <form id="bookedTransactionForm" action="/marketing_dashboard/booked_transactions" method="post">
+        <div class="modal" id="bookedTransactionModal" style="height: 100vh; width: 100%;">
+            <div class="modal-dialog  modal-lg" style="width: 100% !important;">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Booked Transaction</h4>
+                        <button type="button" class="close btn btn-danger" data-dismiss="modal">&times;</button>
+                    </div>
+        
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <input type="hidden" id="status" name="status" value="">
+                        <div class="row d-flex gap-3 flex-wrap mb-3">
+                            <div class="col">
+                                <label for="haulingDate">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                    Hauling Date
+                                </label><br>
+                                <input type="date" name="haulingDate" id="haulingDate" autocomplete="off" class="form-control" required readonly>
+                            </div>
+                            <div class="col">
+                                <label for="haulingTime">
+                                    <i class="fa-regular fa-clock"></i>
+                                    Hauling Time
+                                </label><br>
+                                <input type="time" name="haulingTime" id="haulingTime" autocomplete="off" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="row d-flex gap-3 flex-wrap mb-3">
+                            <div class="col">
+                                <label for="clientName">
+                                    <i class="fa-solid fa-user"></i>
+                                    Client
+                                </label><br>
+                                <input class="form-control" list="clientList" id="clientName" name="clientName" autocomplete="off" required placeholder="Type to search Client" onchange="updateClientId()">
+                                <input type="hidden" id="clientId" name="clientId">
+                                <datalist id="clientList">
+                                    <option value="" disabled selected>Select Client</option>
+                                    <% clients.forEach(client => { %>
+                                        <option value="<%= client.clientName %>" data-clientId="<%= client.clientId %>"><%= client.clientName %></option>
+                                    <% }); %>
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="row d-flex gap-3 flex-wrap mb-3">
+                            <div class="col">
+                                <label for="submitTo">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    Submit To
+                                </label><br>
+                                <select name="submitTo" id="submitTo" class="form-control" required>
+                                    <option value="" disabled selected>SELECT</option>
+                                    <option value="LOGISTICS">LOGISTICS</option>
+                                    <option value="RECEIVING">RECEIVING</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label for="wasteName">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                    Type of Waste
+                                </label><br>
+                                <input class="form-control" list="QuotationWasteList" id="wasteName" name="wasteName" autocomplete="off" required placeholder="Type to search Type of Waste..." onchange="updateWasteId()">
+                                <input type="hidden" id="wasteId" name="wasteId">
+                                <datalist id="QuotationWasteList"></datalist>
+                            </div>
+                        </div>
+                        <div id="buttons" class="row" style="display: none;">
+                            <div class="col d-flex gap-2">
+                                <button type="button" id="addVehicle" class="btn btn btn-success" onclick="addTypeOfVehicle()"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" id="removeVehicle" class="btn btn-danger" onclick="removeTypeOfVehicle()" style="display: none;"><i class="fa-solid fa-minus"></i></button>    
+                            </div>
+                        </div>
+                        <input type="hidden" id="vehicleCounter" name="vehicleCounter" value="1">
+                        <div class="row gap-3 mb-3 flex-wrap" id="type_of_vehicle_row" style="display: none;">
+                            <div class="col" id="typeOfVehicleContainer1">
+                                <label for="typeOfVehicle1">
+                                    <i class="fa-solid fa-truck"></i>
+                                    Type of Vehicle 1
+                                </label>
+                                <input class="form-control" list="QuotationTransportationList" id="typeOfVehicle1" name="typeOfVehicle1" autocomplete="off" required placeholder="Type to search Type of Vehicle..." onchange="updateVehicleId()">
+                                <input type="hidden" id="vehicleId1" name="vehicleId1">
+                                <datalist id="QuotationTransportationList"></datalist>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="wasteCategory">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    Waste Category
+                                </label><br>
+                                <select name="wasteCategory" id="wasteCategory" class="form-control form" required>
+                                    <option value="" disabled selected>SELECT</option>
+                                    <option value="1">HAZARDOUS WASTE</option>
+                                    <option value="2">NON-HAZARDOUS WASTE</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3 gap-3" id="documentContainer" style="display: none;"></div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="remarks">
+                                    <i class="fa-brands fa-rocketchat"></i>
+                                    Remarks
+                                </label><br>
+                                <input class="form-control" autocapitalize="words" autocomplete="off" name="remarks" id="remarks" type="text" placeholder="Type your Remarks">        
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Modal Footer -->
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success" >Submit</button>
+                        <button type="reset" class="btn btn-danger" >Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <form id="updateTransactionForm" action="/marketing_dashboard/update_booked_transactions" method="post">
+        <div class="modal" id="updateTransactionModal" style="height: 100vh; width: 100%;">
+            <div class="modal-dialog  modal-lg" style="width: 100% !important;">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Update Transaction</h4>
+                        <button type="button" id="closeUpdateTransactionBtn" class="close btn btn-danger" data-dismiss="modal">&times;</button>
+                    </div>
+        
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <input type="hidden" name="mtfId" id="mtfId">
+                        <input type="hidden" name="mtfNumber" id="mtfNumber">
+                        <input type="hidden" id="status" name="status" value="">
+                        <div class="row d-flex gap-3 flex-wrap mb-3">
+                            <div class="col">
+                                <label for="haulingDate">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                    Hauling Date
+                                </label><br>
+                                <input type="date" name="haulingDate" id="haulingDate" autocomplete="off" class="form-control" required readonly>
+                            </div>
+                            <div class="col">
+                                <label for="haulingTime">
+                                    <i class="fa-regular fa-clock"></i>
+                                    Hauling Time
+                                </label><br>
+                                <input type="time" name="haulingTime" id="haulingTime" autocomplete="off" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="row d-flex gap-3 flex-wrap mb-3">
+                            <div class="col">
+                                <label for="clientName">
+                                    <i class="fa-solid fa-user"></i>
+                                    Client
+                                </label><br>
+                                <input class="form-control" list="clientList" id="clientName" name="clientName" autocomplete="off" required placeholder="Type to search Client" onchange="updateClientId2()">
+                                <input type="hidden" id="clientId" name="clientId">
+                                <datalist id="clientList">
+                                    <option value="" disabled selected>Select Client</option>
+                                    <% clients.forEach(client => { %>
+                                        <option value="<%= client.clientName %>" data-clientId="<%= client.clientId %>"><%= client.clientName %></option>
+                                    <% }); %>
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="row d-flex gap-3 flex-wrap mb-3">
+                            <div class="col">
+                                <label for="submitTo">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    Submit To
+                                </label><br>
+                                <select name="submitTo" id="submitTo" class="form-control" required>
+                                    <option value="" disabled selected>SELECT</option>
+                                    <option value="LOGISTICS">LOGISTICS</option>
+                                    <option value="RECEIVING">RECEIVING</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label for="wasteName">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                    Type of Waste
+                                </label><br>
+                                <input class="form-control" list="QuotationWasteList2" id="wasteName" name="wasteName" autocomplete="off" required placeholder="Type to search Type of Waste..." onchange="updateWasteId2()">
+                                <input type="hidden" id="wasteId" name="wasteId">
+                                <datalist id="QuotationWasteList2"></datalist>
+                            </div>
+                        </div>
+                        <div id="buttons" class="row" style="display: none;">
+                            <div class="col d-flex gap-2">
+                                <button type="button" id="addVehicle" class="btn btn btn-success" onclick="addTypeOfVehicle2()"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" id="removeVehicle" class="btn btn-danger" onclick="removeTypeOfVehicle2()" style="display: none;"><i class="fa-solid fa-minus"></i></button>    
+                            </div>
+                        </div>
+                        <input type="hidden" id="vehicleCounter" name="vehicleCounter" value="1">
+                        <div class="row gap-3 mb-3 flex-wrap" id="type_of_vehicle_row" style="display: none;">
+                            <div class="col" id="typeOfVehicleContainer1">
+                                <label for="typeOfVehicle">
+                                    <i class="fa-solid fa-truck"></i>
+                                    Type of Vehicle
+                                </label>
+                                <input class="form-control" list="QuotationTransportationList2" id="typeOfVehicle" name="typeOfVehicle" autocomplete="off" required placeholder="Type to search Type of Vehicle..." onchange="updateVehicleId2()">
+                                <input type="hidden" id="vehicleId" name="vehicleId">
+                                <datalist id="QuotationTransportationList2"></datalist>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="wasteCategory">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    Waste Category
+                                </label><br>
+                                <select name="wasteCategory" id="wasteCategory" class="form-control form" required>
+                                    <option value="" disabled selected>SELECT</option>
+                                    <option value="1">HAZARDOUS WASTE</option>
+                                    <option value="2">NON-HAZARDOUS WASTE</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3 gap-3" id="documentContainer" style="display: none;"></div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="remarks">
+                                    <i class="fa-brands fa-rocketchat"></i>
+                                    Remarks
+                                </label><br>
+                                <input class="form-control" autocapitalize="words" autocomplete="off" name="remarks" id="remarks" type="text" placeholder="Type your Remarks">        
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Modal Footer -->
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success" >Submit</button>
+                        <button type="reset" class="btn btn-danger" >Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    // Function to change the page
+    function changePage(pageNumber) {
+        const entriesPerPage = document.getElementById('showEntries').value;
+
+        // Make an AJAX request to the server with the updated page number
+        fetch(`/marketing_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.text())
+        .then(data => {
+            // Update the content of the container with the new data
+            const section = document.querySelector('section');
+            if (section) {
+                section.innerHTML = data;
+
+                document.querySelector('.content').style.marginLeft = '0';
+                document.querySelector('.content').style.width = '100%';
+                document.querySelector('.content').style.padding = '0%';
+                updateActiveClass()
+            }
+
+            // Update the URL to reflect the current page
+            const newUrl = `/marketing_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}`;
+            history.pushState({ page: pageNumber, entriesPerPage }, '', newUrl);
+            window.location.reload()
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Handle errors as needed
+        });
+    }
+
+    function changeEntriesPerPage(selectElement) {
+        const selectedValue = selectElement.value;
+        const currentPage = <%= currentPage %> // Get the current page
+        window.location.href = `/marketing_dashboard/<%= route %>?page=${currentPage}&entriesPerPage=${selectedValue}`;
+    }
+
+    function performSearch() {
+        const searchInput = document.getElementById('searchInput');
+        const searchQuery = searchInput.value.trim(); // Get the trimmed search query
+        const pageNumber = 1;
+        const entriesPerPage = document.getElementById('showEntries').value;
+
+        // Make an AJAX request to the server with the search query and current page
+        fetch(`/marketing_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}&search=${searchQuery}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.text())
+        .then(data => {
+            // Create a temporary container to hold the new content
+            const tempContainer = document.createElement('div');
+            tempContainer.innerHTML = data;
+
+            // Extract the content from the new container
+            const sectionContent = tempContainer.querySelector('.table-container');
+
+            const section = document.querySelector('.table-container');
+            if (section && sectionContent) {
+                section.innerHTML = sectionContent.innerHTML;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Handle errors as needed
+        });
+    }
+
+</script>
+<script>
+    document.getElementById("closeUpdateTransactionBtn").addEventListener("click", () => {
+        document.getElementById("updateTransactionModal").style.display = "none";
+        document.querySelector("body").classList.remove("modal-open");
+        document.querySelector("body").style = "";
+        document.querySelector(".modal-backdrop").remove();
+    })
+
+    const bookedTransactionModal = document.getElementById("bookedTransactionModal");
+    const updateTransactionModal = document.getElementById("updateTransactionModal");
+
+    function updateClientId() {
+        var clientNameInput = bookedTransactionModal.querySelector('#clientName');
+        var clientIdInput = bookedTransactionModal.querySelector('#clientId');
+        var wasteNameInput = bookedTransactionModal.querySelector('#wasteName');
+        var wasteIdInput = bookedTransactionModal.querySelector('#wasteId');
+        var QuotationWasteList = bookedTransactionModal.querySelector('#QuotationWasteList');
+        var QuotationTransportationList = bookedTransactionModal.querySelector('#QuotationTransportationList');
+        var type_of_vehicle_row = bookedTransactionModal.querySelector('#type_of_vehicle_row')
+        var inputFields = type_of_vehicle_row.querySelectorAll('input')
+        // Find the selected option in the client datalist
+        var selectedClientOption = bookedTransactionModal.querySelector('#clientList option[value="' + clientNameInput.value + '"]');
+
+        inputFields.forEach((inputField) => {
+            inputField.value = "";
+        });
+
+        // If a matching client option is found, update the clientIdInput value
+        if (selectedClientOption) {
+            clientIdInput.value = selectedClientOption.getAttribute('data-clientId');
+            // Fetch and update the waste datalist based on the selected client
+            updateWasteDatalist(clientIdInput.value);
+            updateTransportationDatalist(clientIdInput.value);
+        } else {
+            // The entered value is not in the list
+            clientIdInput.value = '';
+            QuotationWasteList.innerHTML = '';
+            QuotationTransportationList.innerHTML = '';
+            wasteIdInput.value = '';
+            wasteNameInput.value = '';
+
+            // You can clear the input or display a message to the user
+            clientNameInput.value = '';
+            alert('Please select a client from the list.');
+        }
+    }
+
+    function updateClientId2() {
+        var clientNameInput = updateTransactionModal.querySelector('#clientName');
+        var clientIdInput = updateTransactionModal.querySelector('#clientId');
+        var wasteNameInput = updateTransactionModal.querySelector('#wasteName');
+        var wasteIdInput = updateTransactionModal.querySelector('#wasteId');
+        var QuotationWasteList2 = updateTransactionModal.querySelector('#QuotationWasteList2');
+        var QuotationTransportationList2 = updateTransactionModal.querySelector('#QuotationTransportationList2');
+        var type_of_vehicle_row = updateTransactionModal.querySelector('#type_of_vehicle_row')
+        var inputFields = type_of_vehicle_row.querySelectorAll('input')
+        // Find the selected option in the client datalist
+        var selectedClientOption = updateTransactionModal.querySelector('#clientList option[value="' + clientNameInput.value + '"]');
+
+        inputFields.forEach((inputField) => {
+            inputField.value = "";
+        });
+
+        // If a matching client option is found, update the clientIdInput value
+        if (selectedClientOption) {
+            clientIdInput.value = selectedClientOption.getAttribute('data-clientId');
+            // Fetch and update the waste datalist based on the selected client
+            updateWasteDatalist2(clientIdInput.value);
+            updateTransportationDatalist2(clientIdInput.value);
+        } else {
+            // The entered value is not in the list
+            clientIdInput.value = '';
+            QuotationWasteList2.innerHTML = '';
+            QuotationTransportationList2.innerHTML = '';
+            wasteIdInput.value = '';
+            wasteNameInput.value = '';
+
+            // You can clear the input or display a message to the user
+            clientNameInput.value = '';
+            alert('Please select a client from the list.');
+        }
+    }
+
+    function updateWasteId() {
+        var wasteName = bookedTransactionModal.querySelector('#wasteName');
+        var wasteId = bookedTransactionModal.querySelector('#wasteId');
+
+        // Find the selected option in the waste datalist
+        var selectedWasteOption = bookedTransactionModal.querySelector('#QuotationWasteList option[value="' + wasteName.value + '"]');
+
+        // If a matching waste option is found, update the wasteId value
+        if (selectedWasteOption) {
+            wasteId.value = selectedWasteOption.getAttribute('data-wasteId');
+        } else {
+            // The entered value is not in the list
+            wasteId.value = '';
+
+            // You can clear the input or display a message to the user
+            wasteName.value = '';
+            alert('Please select a waste from the list.');
+        }
+    }
+
+    function updateWasteId2() {
+        var wasteName = updateTransactionModal.querySelector('#wasteName');
+        var wasteId = updateTransactionModal.querySelector('#wasteId');
+
+        // Find the selected option in the waste datalist
+        var selectedWasteOption = updateTransactionModal.querySelector('#QuotationWasteList2 option[value="' + wasteName.value + '"]');
+
+        // If a matching waste option is found, update the wasteId value
+        if (selectedWasteOption) {
+            wasteId.value = selectedWasteOption.getAttribute('data-wasteId');
+        } else {
+            // The entered value is not in the list
+            wasteId.value = '';
+
+            // You can clear the input or display a message to the user
+            wasteName.value = '';
+            alert('Please select a waste from the list.');
+        }
+    }
+
+    function updateVehicleId() {
+        // Assuming you have multiple instances, use a class instead of an id
+        var vehicleCounter = bookedTransactionModal.querySelector('#vehicleCounter');
+
+        for(let x = 1; x <= vehicleCounter.value; x++){
+            var typeOfVehicle = bookedTransactionModal.querySelector(`#typeOfVehicle${x}`);
+            var vehicleId = bookedTransactionModal.querySelector(`#vehicleId${x}`);
+    
+            // Find the selected option in the waste datalist
+            var selectedTransportationOption = bookedTransactionModal.querySelector('#QuotationTransportationList option[value="' + typeOfVehicle.value + '"]');
+    
+            // If a matching waste option is found, update the vehicleId value
+            if (selectedTransportationOption) {
+                vehicleId.value = selectedTransportationOption.getAttribute('data-vehicleId');
+            } else {
+                // The entered value is not in the list
+                vehicleId.value = '';
+    
+                // You can clear the input or display a message to the user
+                typeOfVehicle.value = '';
+                alert('Please select a waste from the list.');
+            }
+        }
+    }
+
+    function updateVehicleId2() {
+        // Assuming you have multiple instances, use a class instead of an id
+        var vehicleCounter = bookedTransactionModal.querySelector('#vehicleCounter');
+
+        var typeOfVehicle = bookedTransactionModal.querySelector(`#typeOfVehicle`);
+        var vehicleId = bookedTransactionModal.querySelector(`#vehicleId`);
+
+        // Find the selected option in the waste datalist
+        var selectedTransportationOption = bookedTransactionModal.querySelector('#QuotationTransportationList2 option[value="' + typeOfVehicle.value + '"]');
+
+        // If a matching waste option is found, update the vehicleId value
+        if (selectedTransportationOption) {
+            vehicleId.value = selectedTransportationOption.getAttribute('data-vehicleId');
+        } else {
+            // The entered value is not in the list
+            vehicleId.value = '';
+
+            // You can clear the input or display a message to the user
+            typeOfVehicle.value = '';
+            alert('Please select a waste from the list.');
+        }
+    }
+
+    function updateWasteDatalist(clientId) {
+        // Replace the URL with the actual endpoint on your server
+        const endpoint = `/requests/getQuotationWastesByClient?clientId=${clientId}`;
+        fetch(endpoint)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(wastes => {
+                // Update the QuotationWasteList datalist options accordingly
+                const QuotationWasteList = bookedTransactionModal.querySelector('#QuotationWasteList');
+                const wasteNameInput = bookedTransactionModal.querySelector('#wasteName');
+                const wasteIdInput = bookedTransactionModal.querySelector('#wasteId');
+
+                // Clear existing options
+                QuotationWasteList.innerHTML = '<option value="" disabled selected>Select Waste</option>';
+
+                // Add new options based on the fetched data
+                wastes.forEach(waste => {
+                    const option = document.createElement('option');
+                    option.value = waste.wasteName;
+                    option.setAttribute('data-wasteId', waste.id);
+                    QuotationWasteList.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching wastes:', error);
+            });
+    }
+
+    function updateWasteDatalist2(clientId) {
+        // Replace the URL with the actual endpoint on your server
+        const endpoint = `/requests/getQuotationWastesByClient?clientId=${clientId}`;
+        fetch(endpoint)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(wastes => {
+                // Update the QuotationWasteList datalist options accordingly
+                const QuotationWasteList2 = updateTransactionModal.querySelector('#QuotationWasteList2');
+                const wasteNameInput = updateTransactionModal.querySelector('#wasteName');
+                const wasteIdInput = updateTransactionModal.querySelector('#wasteId');
+
+                // Clear existing options
+                QuotationWasteList2.innerHTML = '<option value="" disabled selected>Select Waste</option>';
+
+                // Add new options based on the fetched data
+                wastes.forEach(waste => {
+                    const option = document.createElement('option');
+                    option.value = waste.wasteName;
+                    option.setAttribute('data-wasteId', waste.id);
+                    QuotationWasteList2.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching wastes:', error);
+            });
+    }
+
+    function updateTransportationDatalist(clientId) {
+        // Replace the URL with the actual endpoint on your server
+        const endpoint = `/requests/getQuotationTransportationByClient?clientId=${clientId}`;
+
+        fetch(endpoint)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(transportation => {
+                // Update the QuotationTransportationList datalist options accordingly
+                const QuotationTransportationList = bookedTransactionModal.querySelector('#QuotationTransportationList');
+                const typeOfVehicle = bookedTransactionModal.querySelector('#typeOfVehicle1');
+                const vehicleIdInput = bookedTransactionModal.querySelector('#vehicleId1');
+                const submitTo = bookedTransactionModal.querySelector('#submitTo').value;
+
+                // Clear existing options
+                if (submitTo === 'LOGISTICS') {
+                    QuotationTransportationList.innerHTML = 
+                    '<option value="" disabled selected>Select Waste</option>';
+                } else {        
+                    QuotationTransportationList.innerHTML = 
+                    '<option value="CLIENT VEHICLE" data-vehicleId="V000"></option>';
+                }
+                // Add new options based on the fetched data
+                transportation.forEach(vehicle => {
+                    const option = document.createElement('option');
+                    option.value = vehicle.VehicleType.typeOfVehicle;
+                    option.setAttribute('data-vehicleId', vehicle.id);
+                    QuotationTransportationList.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching wastes:', error);
+            });
+    }
+
+    function updateTransportationDatalist2(clientId) {
+        // Replace the URL with the actual endpoint on your server
+        const endpoint = `/requests/getQuotationTransportationByClient?clientId=${clientId}`;
+
+        fetch(endpoint)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(transportation => {
+                // Update the QuotationTransportationList datalist options accordingly
+                const QuotationTransportationList2 = updateTransactionModal.querySelector('#QuotationTransportationList2');
+                const typeOfVehicle = updateTransactionModal.querySelector('#typeOfVehicle');
+                const vehicleIdInput = updateTransactionModal.querySelector('#vehicleId');
+                const submitTo = updateTransactionModal.querySelector('#submitTo').value;
+
+                // Clear existing options
+                if (submitTo === 'LOGISTICS') {
+                    QuotationTransportationList2.innerHTML = 
+                    '<option value="" disabled selected>Select Waste</option>';
+                } else {        
+                    QuotationTransportationList2.innerHTML = 
+                    '<option value="CLIENT VEHICLE" data-vehicleId="V000"></option>';
+                }
+                // Add new options based on the fetched data
+                transportation.forEach(vehicle => {
+                    const option = document.createElement('option');
+                    option.value = vehicle.VehicleType.typeOfVehicle;
+                    option.setAttribute('data-vehicleId', vehicle.id);
+                    QuotationTransportationList2.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching wastes:', error);
+            });
+    }
+
+    // Add an event listener to the "Submit To" dropdown
+    bookedTransactionModal.querySelector('#submitTo').addEventListener('change', function () {
+        // Get the selected value
+        var selectedValue = this.value;
+
+        // Get the row containing the "Type of Vehicle" dropdown
+        var typeOfVehicleRow = bookedTransactionModal.querySelector('#type_of_vehicle_row');
+        var status = bookedTransactionModal.querySelector('#status');
+        var buttons = bookedTransactionModal.querySelector('#buttons');
+        var removeVehicle = bookedTransactionModal.querySelector('#removeVehicle');
+        var vehicleCounter = bookedTransactionModal.querySelector('#vehicleCounter');
+
+        // Toggle the visibility based on the selected value
+        if (selectedValue === 'LOGISTICS') {
+            status.value = '1';
+            ;
+        } else {        
+            status.value = '3';    
+        }
+        buttons.style.display = 'flex';
+        typeOfVehicleRow.style.display = 'flex';
+        vehicleCounter.value = 1;
+        typeOfVehicleRow.innerHTML = 
+            `
+            <div class="col" id="typeOfVehicleContainer1">
+                <label for="typeOfVehicle1">
+                    <i class="fa-solid fa-truck"></i>
+                    Type of Vehicle 1
+                </label>
+                <input class="form-control" list="QuotationTransportationList" id="typeOfVehicle1" name="typeOfVehicle1" autocomplete="off" required placeholder="Type to search Type of Vehicle..." onchange="updateVehicleId()">
+                <input type="hidden" id="vehicleId1" name="vehicleId1">
+                <datalist id="QuotationTransportationList"></datalist>
+            </div>
+            `
+
+        var clientIdInput = bookedTransactionModal.querySelector('#clientId').value;
+        updateTransportationDatalist(clientIdInput)
+        
+        var index = bookedTransactionModal.querySelector('#vehicleCounter').value;
+
+        if(index > 1){
+            removeVehicle.style.display = "flex"
+        } else {
+            removeVehicle.style.display = "none"
+        }
+    });
+
+    function updateSubmitTo () {
+        // Get the selected value
+        var selectedValue = this.value;
+
+        // Get the row containing the "Type of Vehicle" dropdown
+        var typeOfVehicleRow = updateTransactionModal.querySelector('#type_of_vehicle_row');
+        var status = updateTransactionModal.querySelector('#status');
+        var buttons = updateTransactionModal.querySelector('#buttons');
+        var removeVehicle = updateTransactionModal.querySelector('#removeVehicle');
+        var vehicleCounter = updateTransactionModal.querySelector('#vehicleCounter');
+
+        // Toggle the visibility based on the selected value
+        if (selectedValue === 'LOGISTICS') {
+            status.value = '1';
+            ;
+        } else {        
+            status.value = '3';    
+        }
+        typeOfVehicleRow.style.display = 'flex';
+        vehicleCounter.value = 1;
+        typeOfVehicleRow.innerHTML = 
+            `
+            <div class="col" id="typeOfVehicleContainer1">
+                <label for="typeOfVehicle">
+                    <i class="fa-solid fa-truck"></i>
+                    Type of Vehicle 1
+                </label>
+                <input class="form-control" list="QuotationTransportationList2" id="typeOfVehicle" name="typeOfVehicle" autocomplete="off" required placeholder="Type to search Type of Vehicle..." onchange="updateVehicleId2()">
+                <input type="hidden" id="vehicleId" name="vehicleId">
+                <datalist id="QuotationTransportationList2"></datalist>
+            </div>
+            `
+
+        var clientIdInput = updateTransactionModal.querySelector('#clientId').value;
+        updateTransportationDatalist2(clientIdInput)
+        
+        var index = updateTransactionModal.querySelector('#vehicleCounter').value;
+
+        if(index > 1){
+            removeVehicle.style.display = "flex"
+        } else {
+            removeVehicle.style.display = "none"
+        }
+    }
+
+    bookedTransactionModal.querySelector('#wasteCategory').addEventListener('change', function () {
+        const documentContainer = bookedTransactionModal.querySelector('#documentContainer')
+        documentContainer.style.display = "flex";
+        // Get the selected value
+        var selectedValue = this.value;
+        if(selectedValue == "1"){
+            documentContainer.innerHTML = "";
+            var data =                     
+            `
+            <div class="col" id="ptt_container">
+                <label for="ptt">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    PTT #
+                </label>
+                <input type="text" autocomplete="off" name="ptt" id="ptt" class="form-control form" required>
+            </div>
+            <div class="col" id="manifest_container">
+                <label for="manifest">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Manifest #
+                </label>
+                <input type="text" autocomplete="off" name="manifest" id="manifest" class="form-control form" required>
+            </div>
+            <div class="col" id="pull_out_form_container" style="display:none">
+                <label for="pull_out_form">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Pull Out Form #
+                </label>
+                <input type="text" autocomplete="off" name="pull_out_form" id="pull_out_form" class="form-control form" required value="N/A">
+            </div>
+            `
+            documentContainer.insertAdjacentHTML("afterbegin", data)
+        }
+        else if(selectedValue == "2"){
+            documentContainer.innerHTML = "";
+            var data2 = 
+            `
+            <div class="col" id="ptt_container" style="display:none">
+                <label for="ptt">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    PTT #
+                </label>
+                <input type="text" autocomplete="off" name="ptt" id="ptt" class="form-control form" required value="N/A">
+            </div>
+            <div class="col" id="manifest_container" style="display:none">
+                <label for="manifest">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Manifest #
+                </label>
+                <input type="text" autocomplete="off" name="manifest" id="manifest" class="form-control form" required value="N/A">
+            </div>
+            <div class="col" id="pull_out_form_container">
+                <label for="pull_out_form">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Pull Out Form #
+                </label>
+                <input type="text" autocomplete="off" name="pull_out_form" id="pull_out_form" class="form-control form" required>
+            </div>
+            `
+            documentContainer.insertAdjacentHTML("afterbegin", data2)
+        }
+        else{
+            documentContainer.innerHTML = "";
+        }
+    })
+
+    function updateWasteCategory () {
+        const documentContainer = updateTransactionModal.querySelector('#documentContainer')
+        const wasteCategory = updateTransactionModal.querySelector('#wasteCategory')
+        documentContainer.style.display = "flex";
+        // Get the selected value
+        var selectedValue = wasteCategory.value;
+        if(selectedValue == "1"){
+            documentContainer.innerHTML = "";
+            var data =                     
+            `
+            <div class="col" id="ptt_container">
+                <label for="ptt">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    PTT #
+                </label>
+                <input type="text" autocomplete="off" name="ptt" id="ptt" class="form-control form" required>
+            </div>
+            <div class="col" id="manifest_container">
+                <label for="manifest">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Manifest #
+                </label>
+                <input type="text" autocomplete="off" name="manifest" id="manifest" class="form-control form" required>
+            </div>
+            <div class="col" id="pull_out_form_container" style="display:none">
+                <label for="pull_out_form">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Pull Out Form #
+                </label>
+                <input type="text" autocomplete="off" name="pull_out_form" id="pull_out_form" class="form-control form" required value="N/A">
+            </div>
+            `
+            documentContainer.insertAdjacentHTML("afterbegin", data)
+        }
+        else if(selectedValue == "2"){
+            documentContainer.innerHTML = "";
+            var data2 = 
+            `
+            <div class="col" id="ptt_container" style="display:none">
+                <label for="ptt">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    PTT #
+                </label>
+                <input type="text" autocomplete="off" name="ptt" id="ptt" class="form-control form" required value="N/A">
+            </div>
+            <div class="col" id="manifest_container" style="display:none">
+                <label for="manifest">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Manifest #
+                </label>
+                <input type="text" autocomplete="off" name="manifest" id="manifest" class="form-control form" required value="N/A">
+            </div>
+            <div class="col" id="pull_out_form_container">
+                <label for="pull_out_form">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Pull Out Form #
+                </label>
+                <input type="text" autocomplete="off" name="pull_out_form" id="pull_out_form" class="form-control form" required>
+            </div>
+            `
+            documentContainer.insertAdjacentHTML("afterbegin", data2)
+        }
+        else{
+            documentContainer.innerHTML = "";
+        }
+    }
+
+    // Exclude specific input from being reset
+    document.getElementById('bookedTransactionForm').addEventListener('reset', function (event) {
+        // Prevent the default reset behavior
+        event.preventDefault();
+
+        // Reset all form elements, except for the input with id "input3"
+        Array.from(this.elements).forEach(function (element) {
+            if (element.id !== 'haulingDate') {
+            element.value = "";
+            }
+        });
+    });
+    // Exclude specific input from being reset
+    document.getElementById('updateTransactionForm').addEventListener('reset', function (event) {
+        // Prevent the default reset behavior
+        event.preventDefault();
+
+        // Reset all form elements, except for the input with id "input3"
+        Array.from(this.elements).forEach(function (element) {
+            if (element.id !== 'haulingDate') {
+            element.value = "";
+            }
+        });
+    });
+
+    function addTypeOfVehicle() {
+        // Clone the original block
+        var originalBlock = bookedTransactionModal.querySelector('#typeOfVehicleContainer1');
+        var removeVehicle = bookedTransactionModal.querySelector('#removeVehicle');
+        var clone = originalBlock.cloneNode(true);
+
+        // Update the id, name, and any other attributes as needed
+        var index = bookedTransactionModal.querySelector('#type_of_vehicle_row').childElementCount + 1;
+        bookedTransactionModal.querySelector('#vehicleCounter').value = index;
+        clone.id = 'typeOfVehicleContainer' + index;
+        clone.querySelector('label').innerHTML = '<i class="fa-solid fa-truck"></i> Type of Vehicle ' + index;
+        clone.querySelector('input[name="typeOfVehicle1"]').name = 'typeOfVehicle' + index;
+        clone.querySelector('input[id="typeOfVehicle1"]').id = 'typeOfVehicle' + index;
+        clone.querySelector('input[name="vehicleId1"]').name = 'vehicleId' + index;
+        clone.querySelector('input[id="vehicleId1"]').id = 'vehicleId' + index;
+
+        // Append the clone to the container
+        bookedTransactionModal.querySelector('#type_of_vehicle_row').appendChild(clone);
+
+        if(index > 1){
+            removeVehicle.style.display = "flex"
+        } else {
+            removeVehicle.style.display = "none"
+        }
+    }
+    function removeTypeOfVehicle() {
+        var container = bookedTransactionModal.querySelector('#type_of_vehicle_row');
+        var removeVehicle = bookedTransactionModal.querySelector('#removeVehicle');
+        var childrenCount = container.childElementCount;
+
+        // Ensure there is at least one block remaining
+        if (childrenCount > 1) {
+            // Remove the last block
+            container.removeChild(container.lastElementChild);
+        }
+        bookedTransactionModal.querySelector('#vehicleCounter').value--
+
+        if(bookedTransactionModal.querySelector('#vehicleCounter').value == 1){
+            removeVehicle.style.display = "none"
+        }
+    }
+</script>
+<script>
+    let vehicleTypesData = []; // Declare another global variable
+    let marketingTransactionsData = []; // Declare another global variable
+    let vehiclesData = []; // Declare another global variable
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            // Make parallel AJAX requests using Promise.all
+            const [ vehicleTypesResponse, marketingTransactionsResponse, vehiclesResponse] = await Promise.all([
+                fetch('/requests/getVehicleTypes', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }),
+                fetch('/requests/getMarketingTransaction', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }),
+                fetch('/requests/getVehicles', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }),
+            ]);
+
+            // Check for errors in marketing transaction response
+            if (!vehicleTypesResponse.ok) {
+                throw new Error('Network response was not ok for vehicle types');
+            }
+
+            // Check for errors in marketing transaction response
+            if (!marketingTransactionsResponse.ok) {
+                throw new Error('Network response was not ok for marketing transactions');
+            }
+
+            // Check for errors in vehicles response
+            if (!vehiclesResponse.ok) {
+                throw new Error('Network response was not ok for vehicles');
+            }
+
+            // Get JSON data for vehicles marketing transactions and vehicles
+            vehicleTypesData = await vehicleTypesResponse.json();
+            marketingTransactionsData = await marketingTransactionsResponse.json();
+            vehiclesData = await vehiclesResponse.json();
+            // Log or process the data as needed
+            const currentDate = new Date();
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const monthNames = ['January', 'February', 'March', 'April','May', 'June', 'July', 'August','September', 'October', 'November', 'December'];
+            document.getElementById("month_header").innerText = `${monthNames[month]} ${year}`
+            generateCalendarDays(year, month);
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    });
+
+    function generateCalendarDays(year, month) {
+        // const hauling_date = marketing_transaction_form.querySelector("#hauling_date");
+        const calendar_days = document.getElementById("calendar_days")
+
+        calendar_days.innerHTML = '';
+        // Get the number of days in the month
+        var daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+        // Get the first day of the month (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+        var firstDay = new Date(year, month, 1).getDay();
+    
+        // Initialize an array to store the day values
+        var dayValues = [];
+    
+        // Generate day values
+        for (var day = 1; day <= daysInMonth; day++) {
+            dayValues.push(day);
+        }
+    
+        // Generate the table rows
+        var rows = Math.ceil((daysInMonth + firstDay) / 7);
+    
+        for (var i = 0; i < rows; i++) {
+            var row = document.createElement("tr");
+    
+            for (var j = 0; j < 7; j++) {
+                var cell = document.createElement("td");
+                var index = i * 7 + j - firstDay;
+    
+                if (index >= 0 && index < daysInMonth) {
+                    // Create a span for the day value
+                    var div_element = document.createElement("div");
+                    div_element.classList.add("td_header");
+    
+                    var daySpan = document.createElement("span");
+                    daySpan.textContent = dayValues[index];
+    
+                    // Add a class to the td element based on the date
+                    cell.classList.add("date-" + dayValues[index]);
+    
+                    // Create a button for booking
+                    var bookButton = document.createElement("button");
+                    bookButton.textContent = "Book";
+                    // Set class for the "Book" button
+                    bookButton.classList.add("py-0");
+                    bookButton.classList.add("btn");
+                    bookButton.classList.add("btn-success");
+                    bookButton.classList.add("book-button");
+                    // Set data-toggle and data-target attributes for Bootstrap modal
+                    bookButton.setAttribute("data-toggle", "modal");
+                    bookButton.setAttribute("data-target", "#bookedTransactionModal");
+
+                    // Create a div for "Available slot"
+                    var availableSlotDiv = document.createElement("div");
+                    availableSlotDiv.textContent = "Available Vehicles:";
+                    // Set class for the "Available slot" div
+                    availableSlotDiv.classList.add("available_slot");
+
+                    var total_vehicle_day = [];
+                    var vehicle_type_day = [];
+                    for(let x = 1; x < vehiclesData.length; x++){
+                        if(!vehicle_type_day.includes(vehiclesData[x].VehicleType.vehicleCode)){
+                            vehicle_type_day.push(vehiclesData[x].VehicleType.vehicleCode);
+                            total_vehicle_day[vehiclesData[x].VehicleType.vehicleCode] = 1;
+                        }
+                        else{
+                            total_vehicle_day[vehiclesData[x].VehicleType.vehicleCode]++;
+                        }
+                    }
+
+                    var date_format = year + '-' + (month + 1).toString().padStart(2, "0") + '-' + (dayValues[index]).toString().padStart(2, "0");
+                    var booked_vehicle_day = [];
+                    var booked_vehicle_type_day = [];
+                    var book_logistics = 0
+                    var book_receiving = 0
+                    for(let x = 0; x < marketingTransactionsData.length; x++){
+                        if(date_format == date_decoder2(marketingTransactionsData[x].haulingDate)){
+                            if(marketingTransactionsData[x].submitTo == "LOGISTICS"){
+                                var vehicle_code;
+                                for(let y = 1; y < vehiclesData.length; y++){
+                                    if(vehiclesData[y].VehicleType.typeOfVehicle == marketingTransactionsData[x].QuotationTransportation.VehicleType.typeOfVehicle){
+                                        vehicle_code = vehiclesData[y].VehicleType.vehicleCode
+                                        break
+                                    }
+                                }
+                                if(!booked_vehicle_type_day.includes(vehicle_code)){
+                                    booked_vehicle_type_day.push(vehicle_code)
+                                    booked_vehicle_day[vehicle_code] = 1;
+                                }
+                                else{
+                                    booked_vehicle_day[vehicle_code]++;
+                                }
+                                book_logistics += 1;
+                            }
+                            else if(marketingTransactionsData[x].submitTo == "RECEIVING"){
+                                book_receiving += 1;
+                            }
+                        }
+                    }
+                            
+                    // Create a div for "Booked slot"
+                    var bookSlotDiv = document.createElement("div");
+                    bookSlotDiv.innerHTML = `Booked Transactions:<b>${book_logistics + book_receiving}</b><br>Logistics:<b>${book_logistics}</b> - Receiving:<b>${book_receiving}</b>`;
+                    // Set class for the "Booked slot" div
+                    bookSlotDiv.classList.add("book_slot");
+
+                    var available_vehicle_div = document.createElement("div")
+                    available_vehicle_div.classList.add("d-flex");
+                    available_vehicle_div.classList.add("justify-content-center");
+                    available_vehicle_div.classList.add("flex-wrap");
+                    available_vehicle_div.classList.add("gap-1");
+                    vehicle_type_day.forEach((data, index) => {
+                        var vehicle_div = document.createElement("div");
+                        vehicle_div.classList.add("btn");
+                        vehicle_div.classList.add("btn-success");
+                        vehicle_div.style.fontSize = "10px";
+                        var actual_count = 0;
+                        var booked = booked_vehicle_day[vehicle_type_day[index]] || 0;
+                        actual_count = total_vehicle_day[vehicle_type_day[index]] - booked;
+                        vehicle_div.textContent = `${vehicle_type_day[index]} : ${actual_count}/${total_vehicle_day[vehicle_type_day[index]]}`
+                        available_vehicle_div.appendChild(vehicle_div);
+                    })
+
+                    // Append the day value, the button, and the "Available slot" div to the cell
+                    div_element.appendChild(daySpan);
+                    div_element.appendChild(bookButton);
+                    cell.appendChild(div_element);
+                    cell.appendChild(bookSlotDiv);
+                    cell.appendChild(availableSlotDiv);
+                    cell.appendChild(available_vehicle_div);
+    
+                    // Add click event listener to the "Book" button
+                    bookButton.addEventListener("click", function (event) {
+                        // Get the date from the clicked button's parent td element
+                        var clickedDate = event.currentTarget.parentElement.querySelector('.td_header span').textContent;
+
+                        // Format the date (assuming simple formatting for illustration purposes)
+                        var formattedDate = year + '-' + (month + 1).toString().padStart(2, "0") + '-' + clickedDate.toString().padStart(2, "0");
+
+                        // Set the hauling_date input value
+                        document.getElementById("haulingDate").value = formattedDate;
+
+                        const bookedTransactionForm = document.getElementById('bookedTransactionForm')
+                        document.getElementById('QuotationWasteList').innerHTML = "";
+                        document.getElementById('QuotationTransportationList').innerHTML = "";
+                        document.getElementById('documentContainer').innerHTML = "";
+                        document.getElementById('documentContainer').style.display = "none";
+
+                        // Reset all form elements, except for the input with id "input3"
+                        Array.from(bookedTransactionForm.elements).forEach(function (element) {
+                            if (element.id !== 'haulingDate') {
+                                element.value = "";
+                            }
+                        });
+
+                    });
+                } else {
+                    // Set background color to gray for cells without a number
+                    cell.style.backgroundColor = 'gray';
+                }
+    
+                row.appendChild(cell);
+            }
+    
+            calendar_days.appendChild(row);
+        }
+    }
+    function updateData(MTFData) {
+        const updateTransactionModal = document.getElementById("updateTransactionModal");
+        updateTransactionModal.querySelector("#mtfId").value = MTFData;
+        for(let x = 0; x < marketingTransactionsData.length; x++){
+            if(MTFData == marketingTransactionsData[x].id){
+                document.getElementById("updateTransactionForm").action = `/marketing_dashboard/update_booked_transactions/${marketingTransactionsData[x].id}`;
+                updateTransactionModal.querySelector("#mtfNumber").value = marketingTransactionsData[x].mtfNumber;
+                updateTransactionModal.querySelector("#haulingDate").value = marketingTransactionsData[x].haulingDate;
+                updateTransactionModal.querySelector("#haulingTime").value = marketingTransactionsData[x].haulingTime;
+                updateTransactionModal.querySelector("#clientName").value = marketingTransactionsData[x].Client.clientName;
+                updateTransactionModal.querySelector("#clientId").value = marketingTransactionsData[x].clientId;
+                updateClientId2();
+                updateTransactionModal.querySelector("#submitTo").value = marketingTransactionsData[x].submitTo;
+                updateSubmitTo ();
+                updateTransactionModal.querySelector("#wasteName").value = marketingTransactionsData[x].QuotationWaste.wasteName;
+                updateTransactionModal.querySelector("#wasteId").value = marketingTransactionsData[x].QuotationWaste.id;
+                updateTransactionModal.querySelector("#typeOfVehicle").value = marketingTransactionsData[x].QuotationTransportation.VehicleType.typeOfVehicle;
+                updateTransactionModal.querySelector("#vehicleId").value = marketingTransactionsData[x].QuotationTransportation.id;
+                updateTransactionModal.querySelector("#wasteCategory").value = marketingTransactionsData[x].wasteCategoryId;
+                updateWasteCategory ();
+                updateTransactionModal.querySelector("#ptt").value = marketingTransactionsData[x].pttNumber;
+                updateTransactionModal.querySelector("#manifest").value = marketingTransactionsData[x].manifestNumber;
+                updateTransactionModal.querySelector("#pull_out_form").value = marketingTransactionsData[x].pullOutFormNumber;
+                updateTransactionModal.querySelector("#remarks").value = marketingTransactionsData[x].remarks;
+            }
+        }
+    }
+    function deleteData(id) {
+        const confirmation = confirm('Are you sure you want to delete this Transaction?');
+
+        if (confirmation) {
+            fetch(`/marketing_dashboard/delete_booked_transactions/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+        }
+    }
+</script>

@@ -1,0 +1,9 @@
+{
+    "models": "models",
+    "dialect": "mysql",
+    "port": 3306,
+    "host": "localhost",
+    "database": "fefc_system",
+    "username": "root",
+    "password": ""
+}

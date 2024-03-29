@@ -1,0 +1,44 @@
+<!-- views/marketing/marketing_sidebar.ejs -->
+
+<div class="sidebar-container">
+    <div class="sidebar" id="sidebar">
+        <a href="#" style="height: 60px; background-color: #303030">
+            <img src="/images/logo.png" alt="Logo">
+            <span>
+                <h6 class="d-flex align-center ps-2 fw-bold" style="color: #ffbf00; font-family: Times New Roman;">FAR EAST FUEL<br>CORPORATION</h6>
+            </span>
+        </a>
+        <a href="/marketing_dashboard" class="sidebar-link" id="/">
+            <i class="fas fa-th-large"></i>
+            <span class="link-text">Dashboard</span>
+        </a>
+        <a href="/marketing_dashboard/booked_transactions" class="sidebar-link" id="/booked_transactions">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <span class="link-text">Booked Transactions</span>
+        </a>
+        <a href="/marketing_dashboard/clients" class="sidebar-link" id="/clients">
+            <i class="fa-solid fa-users"></i>   
+            <span class="link-text">Clients</span>
+        </a>
+        <a href="/marketing_dashboard/type_of_waste" class="sidebar-link" id="/type_of_waste">
+            <i class="fa-solid fa-table-list"></i>
+            <span class="link-text">Type of Wastes</span>
+        </a>
+        <a href="/marketing_dashboard/quotations" class="sidebar-link" id="/quotations">
+            <i class="fa-solid fa-file-circle-plus" class="sidebar-link" id="dashboard-link"></i>
+            <span class="link-text">Quotations</span>
+        </a>
+        <a href="/marketing_dashboard/commissions" class="sidebar-link" id="/commissions">
+            <i class="fa-solid fa-sack-dollar"></i>
+            <span class="link-text">Commissions</span>
+        </a>
+        <a href="/logout">
+            <i class="fa-solid fa-power-off"></i>
+            <span class="link-text">Logout</span>
+        </a>
+    </div>
+    <!-- Toggle Button -->
+    <button onclick="toggleSidebar()" id="toggleButton">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>

@@ -1,0 +1,1322 @@
+<!-- views/validate_quotation.ejs -->
+
+<%- include('head.ejs') %>
+</head>
+<body style="overflow: scroll;">
+    <div class="content">
+        <div class="col-xs-12">
+            <section  style="display: none;">
+                <h4>QUOTATIONS</h4><br>
+                <div id="new_client_form_tab">
+                    <h5>UPDATE QUOTATION FORM</h5><br>
+                    <form id="quotationForm" action="/dashboard/quotations/update" method="post" enctype="multipart/form-data" onsubmit="submitForm(event)">
+                        <input type="hidden" name="user" id="user" value="<%= employeeName %>">
+                        <h6>QUOTATION DETAILS</h6>
+                        <div style="display: flex; gap: 20px;">
+                            <div>
+                                <input type="radio" name="is_there_moa" id="with_moa" value="WITH MOA" checked>With MOA
+                            </div>
+                            <div>
+                                <input type="radio" name="is_there_moa" id="without_moa" value="WITHOUT MOA">Without MOA
+                            </div>
+                        </div>
+                        <div class="position-relative;">
+                            <div style="display: grid; grid-template-columns: 12% 12% 15% 15% 15% 31%; gap: 15px; width: calc(100% - 75px);">
+                                <div>
+                                    <label for="quotation_no">
+                                        <i class="fa-solid fa-list-ol"></i>
+                                        Quotation #
+                                    </label><br>
+                                    <input type="text" name="quotation_no" id="quotation_no" autocomplete="off" class="form-control" required value="<%= quotation[0]?.quotationCode %>">
+                                </div>
+                                <div>
+                                    <label for="revision_no">
+                                        <i class="fa-solid fa-list-ol"></i>
+                                        Revision #
+                                    </label><br>
+                                    <input type="text" name="revision_no" id="revision_no" autocomplete="off" class="form-control" required value="<%= quotation[0]?.revisionNumber %>">
+                                </div>
+                                <div id="validity_container">
+                                    <label for="validity">
+                                        <i class="fa-solid fa-calendar-days"></i>
+                                        MOA End Date
+                                    </label><br>
+                                    <% const validityDate = quotation[0]?.validity ? quotation[0].validity.toISOString().split('T')[0] : ''; %>
+                                    <input type="date" name="validity" id="validity" autocomplete="off" class="form-control" value="<%= validityDate %>">
+                                </div>
+                                <div>
+                                    <label for="terms">
+                                        <i class="fa-solid fa-calendar-days"></i>
+                                        Terms Charge
+                                    </label><br>
+                                    <input type="text" name="terms" id="terms" autocomplete="off" class="form-control" required value="<%= quotation[0]?.termsCharge %>">
+                                </div>
+                                <div>
+                                    <label for="terms2">
+                                        <i class="fa-solid fa-calendar-days"></i>
+                                        Terms Buying
+                                    </label><br>
+                                    <input type="text" name="terms2" id="terms2" autocomplete="off" class="form-control" required value="<%= quotation[0]?.termsBuying %>">
+                                </div>
+                                <div>
+                                    <label for="client">
+                                        <i class="fa-solid fa-user"></i>
+                                        Client
+                                    </label><br>
+                                    <input type="hidden" name="client" id="client" autocomplete="off" class="form-control" required readonly value="<%= quotation[0]?.Client?.clientId %>">
+                                    <input type="text" name="clientName" id="clientName" autocomplete="off" class="form-control" required readonly value="<%= quotation[0]?.Client?.clientName %>">
+                                </div>
+                            </div><br>
+                            <div class="d-flex gap-3">
+                                <div class="container-fluid m-0 p-0">
+                                    <label for="scope_of_work">
+                                        <i class="fa-solid fa-list-ol"></i>
+                                        Scope of Work
+                                    </label><br>
+                                    <input type="text" name="scope_of_work" id="scope_of_work" autocomplete="off" class="form-control" required value="<%= quotation[0]?.scopeOfWork %>">
+                                </div>
+                                <div class="container-fluid m-0 p-0">
+                                    <label for="remarks">
+                                        <i class="fa-solid fa-list-ol"></i>
+                                        Remarks
+                                    </label><br>
+                                    <input type="text" name="remarks" id="remarks" autocomplete="off" class="form-control" required value="<%= quotation[0]?.remarks %>">
+                                </div>
+                            </div><br>
+                        </div><br>
+                        <h6>QUOTATION WASTE DETAILS</h6>
+                        <input type="hidden" id="list_counter" name="list_counter" value="<%= quotation[0]?.QuotationWaste.length %>">
+                        <div class="position-relative">
+                            <div class="d-flex gap-2 position-absolute top-0 end-0" style="margin-top: -40px;">
+                                <button type="button" id="remove_item_button" class="btn btn-danger" style="display: none;">
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+                                <button type="button" id="add_item_button" class="btn btn-success">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                            <div id="item-container">
+                            <% quotation[0]?.QuotationWaste.forEach((waste, index) => { %>
+                                <div class="item" id="item_<%= index + 1 %>" style="display: grid; grid-template-columns: 1% 15% 25% 12% 10% 10% 12% 15%; gap: 15px; width: calc(100% - 105px);">
+                                    <!-- Your existing HTML for each item goes here -->
+                                    <div>
+                                        <h6>#</h6>
+                                        <h3 id="number<%= index + 1 %>"><%= index + 1 %></h3>
+                                    </div>
+                                    <div>
+                                        <label for="waste_code<%= index + 1 %>">
+                                            <i class="fa-solid fa-list"></i>
+                                            Waste Code
+                                        </label><br>
+                                        <select name="waste_code<%= index + 1 %>" id="waste_code<%= index + 1 %>" class="form-control" required>
+                                            <option value="" disabled selected>Select Waste Code</option>
+                                            <% typesOfWastes.forEach(typesOfWaste => { %>
+                                                <option value="<%= typesOfWaste.wasteId %>" <%= quotation[0]?.QuotationWaste[index]?.wasteId === typesOfWaste.wasteId ? 'selected' : '' %>><%= typesOfWaste.wasteCode %></option>
+                                            <% }); %>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="waste_name<%= index + 1 %>">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                            Waste Name
+                                        </label><br>
+                                        <input type="text" name="waste_name<%= index + 1 %>" id="waste_name<%= index + 1 %>" autocomplete="off" class="form-control" required value="<%= quotation[0]?.QuotationWaste[index]?.wasteName %>">
+                                    </div>
+                                    <div>
+                                        <label for="mode<%= index + 1 %>">
+                                            <i class="fa-solid fa-cart-shopping"></i>
+                                            Mode
+                                        </label><br>
+                                        <select name="mode<%= index + 1 %>" id="mode<%= index + 1 %>" class="form-control" required>
+                                            <option value="" disabled <%= quotation[0]?.QuotationWaste[index]?.mode === '' ? 'selected' : '' %>>SELECT</option>
+                                            <option value="CHARGE" <%= quotation[0]?.QuotationWaste[index]?.mode === 'CHARGE' ? 'selected' : '' %>>CHARGE</option>
+                                            <option value="FREE OF CHARGE" <%= quotation[0]?.QuotationWaste[index]?.mode === 'FREE OF CHARGE' ? 'selected' : '' %>>FREE OF CHARGE</option>
+                                            <option value="BUYING" <%= quotation[0]?.QuotationWaste[index]?.mode === 'BUYING' ? 'selected' : '' %>>BUYING</option>
+                                            <option value="SELLING" <%= quotation[0]?.QuotationWaste[index]?.mode === 'SELLING' ? 'selected' : '' %>>SELLING</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="unit<%= index + 1 %>">
+                                            <i class="fa-solid fa-scale-balanced"></i>
+                                            Unit
+                                        </label><br>
+                                        <select name="unit<%= index + 1 %>" id="unit<%= index + 1 %>" class="form-control" required>
+                                            <option value="" disabled <%= quotation[0]?.QuotationWaste[index]?.unit === '' ? 'selected' : '' %>>SELECT</option>
+                                            <option value="Pc" <%= quotation[0]?.QuotationWaste[index]?.unit === 'Pc' ? 'selected' : '' %>>PIECES</option>
+                                            <option value="Pc" <%= quotation[0]?.QuotationWaste[index]?.unit === 'Pc' ? 'selected' : '' %>>PIECES</option>
+                                            <option value="Kg" <%= quotation[0]?.QuotationWaste[index]?.unit === 'Kg' ? 'selected' : '' %>>KILOGRAMS</option>
+                                            <option value="L" <%= quotation[0]?.QuotationWaste[index]?.unit === 'L' ? 'selected' : '' %>>LITERS</option>
+                                            <option value="DRUM" <%= quotation[0]?.QuotationWaste[index]?.unit === 'DRUM' ? 'selected' : '' %>>DRUM</option>
+                                            <option value="LOT" <%= quotation[0]?.QuotationWaste[index]?.unit === 'LOT' ? 'selected' : '' %>>LOT</option>
+                                            <option value="TRIP" <%= quotation[0]?.QuotationWaste[index]?.unit === 'TRIP' ? 'selected' : '' %>>TRIP</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="unit_price<%= index + 1 %>">
+                                            <i class="fa-solid fa-money-bill-wave"></i>
+                                            Unit Price
+                                        </label><br>
+                                        <input type="number" name="unit_price<%= index + 1 %>" id="unit_price<%= index + 1 %>" autocomplete="off" step="0.01" class="form-control" required value="<%= quotation[0]?.QuotationWaste[index]?.unitPrice %>">
+                                    </div>
+                                    <div>
+                                        <label for="vat_calculation<%= index + 1 %>">
+                                            <i class="fa-solid fa-calculator"></i>
+                                            Vat Calculation
+                                        </label><br>
+                                        <select name="vat_calculation<%= index + 1 %>" id="vat_calculation<%= index + 1 %>" class="form-control" required>
+                                            <option value="" disabled <%= quotation[0]?.QuotationWaste[index]?.vatCalculation === '' ? 'selected' : '' %>>SELECT</option>
+                                            <option value="VAT INCLUSIVE" <%= quotation[0]?.QuotationWaste[index]?.vatCalculation === "VAT INCLUSIVE" ? 'selected' : '' %>>VAT INCLUSIVE</option>
+                                            <option value="VAT EXCLUSIVE" <%= quotation[0]?.QuotationWaste[index]?.vatCalculation === "VAT EXCLUSIVE" ? 'selected' : '' %>>VAT EXCLUSIVE</option>
+                                            <option value="NON VATABLE" <%= quotation[0]?.QuotationWaste[index]?.vatCalculation === "NON VATABLE" ? 'selected' : '' %>>NON VATABLE</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="fix_price<%= index + 1 %>">
+                                            <i class="fa-solid fa-money-bill-wave"></i>
+                                            Fix Price
+                                        </label><br>
+                                        <input type="number" name="fix_price<%= index + 1 %>" id="fix_price<%= index + 1 %>" autocomplete="off" class="form-control" required value="<%= quotation[0]?.QuotationWaste[index]?.maxCapacity %>">
+                                    </div>
+                                </div>
+                            <% }); %>
+                            </div><br>
+                        </div><br>
+                        <h6>QUOTATION TRANSPORTATION DETAILS</h6>
+                        <input type="hidden" id="tf_counter" name="tf_counter" value="<%= quotation[0]?.QuotationTransportation.length %>">
+                        <input type="hidden" id="is_transportation" name="is_transportation" value="true">
+                        <button type="button" id="tf_button" class="btn btn-danger">
+                            Without Transportation Fee
+                        </button><br>
+                        <div id="tf-container" style="position: relative;">
+                            <div class="d-flex gap-2 position-absolute top-0 end-0" style="margin-top: -40px;">
+                                <button type="button" id="remove_tf_button" class="btn btn-danger" style="display: none;">
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+                                <button type="button" id="add_tf_button" class="btn btn-success">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                            <div id="tf-container">
+                            <% quotation[0]?.QuotationTransportation.forEach((transportation, index) => { %>
+                                <div class="tf-item" id="tf-item_<%= index + 1 %>" style="display: grid; grid-template-columns: 1% 15% 25% 12% 10% 10% 12% 15%; gap: 15px; width: calc(100% - 105px);">
+                                    <div>
+                                        <h6>#</h6>
+                                        <h3 id="number<%= index + 1 %>"><%= index + 1 %></h3>
+                                    </div>
+                                    <div>
+                                        <label for="type_of_vehicle<%= index + 1 %>">
+                                            <i class="fa-solid fa-truck"></i>
+                                            Type of Vehicle
+                                        </label><br>
+                                        <select name="type_of_vehicle<%= index + 1 %>" id="type_of_vehicle<%= index + 1 %>" class="form-control" required>
+                                            <option value="" disabled selected>Select Waste Code</option>
+                                            <% vehicleTypes.forEach(vehicleType => { %>
+                                                <option value="<%= vehicleType.vehicleId %>" <%= quotation[0]?.QuotationTransportation[index]?.vehicleId === vehicleType.vehicleId ? 'selected' : '' %>><%= vehicleType.typeOfVehicle %></option>
+                                            <% }); %>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="hauling_area<%= index + 1 %>">
+                                            <i class="fa-solid fa-list"></i>
+                                            Area of Hauling
+                                        </label><br>
+                                        <input type="text" name="hauling_area<%= index + 1 %>" id="hauling_area<%= index + 1 %>" autocomplete="off" class="form-control" required value="<%= quotation[0]?.QuotationTransportation[index]?.haulingArea %>">
+                                    </div>
+                                    <div>
+                                        <label for="tf_mode<%= index + 1 %>">
+                                            <i class="fa-solid fa-cart-shopping"></i>
+                                            Mode
+                                        </label><br>
+                                        <select name="tf_mode<%= index + 1 %>" id="tf_mode<%= index + 1 %>" class="form-control" required>
+                                            <option value="" <%= quotation[0]?.QuotationTransportation[index]?.mode === '' ? 'selected' : '' %>>SELECT</option>
+                                            <option value="CHARGE" <%= quotation[0]?.QuotationTransportation[index]?.mode === 'CHARGE' ? 'selected' : '' %>>CHARGE</option>
+                                            <option value="FREE OF CHARGE" <%= quotation[0]?.QuotationTransportation[index]?.mode === 'FREE OF CHARGE' ? 'selected' : '' %>>FREE OF CHARGE</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="tf_unit<%= index + 1 %>">
+                                            <i class="fa-solid fa-scale-balanced"></i>
+                                            Unit
+                                        </label><br>
+                                        <select name="tf_unit<%= index + 1 %>" id="tf_unit<%= index + 1 %>" class="form-control" required>
+                                            <option value="" <%= quotation[0]?.QuotationTransportation[index]?.unit === '' ? 'selected' : '' %>>SELECT</option>
+                                            <option value="TRIP" <%= quotation[0]?.QuotationTransportation[index]?.unit === 'TRIP' ? 'selected' : '' %>>TRIP</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="tf_unit_price<%= index + 1 %>">
+                                            <i class="fa-solid fa-money-bill-wave"></i>
+                                            Unit Price
+                                        </label><br>
+                                        <input type="number" name="tf_unit_price<%= index + 1 %>" id="tf_unit_price<%= index + 1 %>" autocomplete="off" step="0.01" class="form-control" required value="<%= quotation[0]?.QuotationTransportation[index]?.unitPrice %>">
+                                    </div>
+                                    <div>
+                                        <label for="tf_vat_calculation<%= index + 1 %>">
+                                            <i class="fa-solid fa-calculator"></i>
+                                            Vat Calculation
+                                        </label><br>
+                                        <select name="tf_vat_calculation<%= index + 1 %>" id="tf_vat_calculation<%= index + 1 %>" class="form-control" required>
+                                            <option value="" <%= quotation[0]?.QuotationTransportation[index]?.vatCalculation === '' ? 'selected' : '' %>>SELECT</option>
+                                            <option value="VAT INCLUSIVE" <%= quotation[0]?.QuotationTransportation[index]?.vatCalculation === 'VAT INCLUSIVE' ? 'selected' : '' %>>VAT INCLUSIVE</option>
+                                            <option value="VAT EXCLUSIVE" <%= quotation[0]?.QuotationTransportation[index]?.vatCalculation === 'VAT EXCLUSIVE' ? 'selected' : '' %>>VAT EXCLUSIVE</option>
+                                            <option value="NON VATABLE" <%= quotation[0]?.QuotationTransportation[index]?.vatCalculation === 'NON VATABLE' ? 'selected' : '' %>>NON VATABLE</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="max_capacity<%= index + 1 %>">
+                                            <i class="fa-solid fa-weight-scale"></i>
+                                            Min. Weight/ Trip (Kg)
+                                        </label><br>
+                                        <input type="number" name="max_capacity<%= index + 1 %>" id="max_capacity<%= index + 1 %>" autocomplete="off" class="form-control" required value="<%= quotation[0]?.QuotationTransportation[index]?.maxCapacity %>">
+                                    </div>
+                                </div>
+                            <% }); %>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3" style="margin-top: 20px;">
+                            <button type="button" id="generate_button" class="btn btn-success">
+                                Generate Quotation
+                            </button>
+                            <button type="button" id="downloadAndSubmitBtn" class="btn btn-success" style="display: none;">
+                                Download and Submit
+                            </button>
+                            <button type="button" id="downloadBtn"  class="btn btn-success" style="display: none;">
+                                Download
+                            </button>
+                            <button type="submit" id="submitBtn"  class="btn btn-success" style="display: none;">
+                                Submit
+                            </button>
+                            <button type="button" id="generateQrBtn" class="btn btn-success" style="display: none;">
+                                Generate QR
+                            </button>
+                            <div id="image_container"></div>
+                        </div><br>
+                    </form>
+                </div>
+            </section>
+        </div>
+        <div style="position: absolute; top: 0; left: 0;">
+            <div class="what_to_print" id="what_to_print">
+                <img src="/images/letterhead.jpg" id="background-image" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
+                <div class="pdf_container">
+                    <div d-flex>
+                        <div class="client_copy">
+                            <h4 class="bold">CLIENT'S COPY</h4>
+                        </div>
+                        <div class="pdf_header">
+                            <h4 class="bold fs-5">QUOTATION</h4>
+                        </div>
+                        <div class="billing_number" style="display: flex; gap: 20px;">
+                            <div>
+                                <h4 class="italic">Quotation Number</h4>
+                                <h4 id="qlf_form_no_container" class="bold"></h4>
+                                <h4 class="italic">Date</h4>
+                                <h4 id="date_made_container" class="bold"></h4>
+                            </div>
+                            <div>
+                                <h4 class="italic">Revision Number</h4>
+                                <h4 id="revision_number_container" class="bold"></h4>
+                                <h4 class="italic">Valid Until</h4>
+                                <h4 id="valid_until_container" class="bold"></h4>
+                            </div>
+                        </div>
+                        <div class="customer_summary">
+                            <div class="customer">
+                                <div class="customer_header">
+                                    <h3 class="bold">MAIN OFFICE ADDRESS</h3>
+                                </div>
+                                <div class="customer_detail">
+                                    <h3 id="client_name_container" class="bold" style="font-size: 12px !important;"></h3>
+                                    <h4 id="address_container" style="font-size: 10px !important;"></h4>
+                                    <h4 id="tin_id_container" style="font-size: 10px !important;"></h4>
+                                    <h4 id="nature_of_business_container" style="font-size: 10px !important;"></h4>
+                                    <div id="contact_number_container" style="display: none; font-size: 10px !important;">
+                                        <h4>Contact #:</h4><h4 id="contact_number" style="padding-left: 5px;"></h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="account_summary">
+                                <div class="account_summary_header">
+                                    <h3 class="bold">FIELD OFFICE ADDRESS</h3>
+                                </div>
+                                <div class="customer_detail">
+                                    <h3 id="client_name_container2" class="bold" style="font-size: 12px !important;"></h3>
+                                    <h4 id="address_container2" style="font-size: 10px !important;"></h4>
+                                    <h4 id="tin_id_container2" style="font-size: 10px !important;"></h4>
+                                    <h4 id="nature_of_business_container2" style="font-size: 10px !important;"></h4>
+                                    <div id="contact_number2_container" style="display: none; font-size: 10px !important;">
+                                        <h4>Contact #:</h4><h4 id="contact_number2" style="padding-left: 5px;"></h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><br><br>
+                        <div class="scope">
+                            <h3 class="bold">SCOPE OF WORK</h3>
+                        </div>
+                        <div class="scope_detail">
+                            <h3 id="scope_of_work_input"></h3>
+                        </div>
+                        <div class="account_details">
+                            <div class="account_details_header">
+                                <h3><b>DETAILS</b></h3>
+                            </div>
+                            <table class="account_details_detail">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Description</th>
+                                        <th>Qty.</th>
+                                        <th>Unit</th>
+                                        <th>Unit Price</th>
+                                        <th>Amount</th>
+                                        <th>Mode </th>
+                                        <th>Vat</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table_data">
+    
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="remarks_container" style="display: flex; gap: 5px;">
+                            <h3 class="bold">REMARKS:</h3><h3 id="remarks_input" style="font-size: 12px;"></h3>
+                        </div>
+                        <div class="details" style="display: grid; grid-template-columns: 1fr 2fr;">
+                            <div style="border: 1px solid black; padding: 5px;">
+                                <h3 class="bold">QUOTATION VALIDITY:</h3>
+                                <div style="display: flex; justify-content: center; align-items: center; height: 40px; border-top: 1px solid black;">
+                                    <h3 id="validity_input" class="bold">30 DAYS</h3>
+                                </div>
+                            </div>
+                            <div style="border: 1px solid black; padding: 5px;">
+                                <h3 class="bold">TERMS OF PAYMENT</h3>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid black;">
+                                    <div style="display: flex; flex-direction: column;">
+                                        CHARGE: 
+                                        <h3 id="charge_input" class="bold text-center"></h3>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; border-left: 1px solid black; padding-left: 5px; height: 40PX;">
+                                        BUYING; 
+                                        <h3 id="buying_input" class="bold text-center"></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="other_details">
+                            <div style="border-bottom: 2px solid black;">
+                                <h3 class="bold text-center">REQUIREMENTS</h3>
+                            </div>
+                            <div style="padding: 5px;">
+                                <h3>1. Memorandum of Agreement, VAT Exemption Certificate (if applicable)</h3>
+                                <h3>2. Copy of BIR Form 2303 and 2307</h3>
+                            </div>
+                        </div>
+                        <div id="qrCode">
+                            <img id="qrCodeImage" src="" alt="">
+                        </div>
+                        <div class="footer">
+                            <div>
+                                <div class="footer_header">
+                                    <h3>Prepared By:</h3>
+                                </div>
+                                <div class="assignatory">
+                                    <div>
+                                        <div class="signature" id="marketing_signature"><img src="/images/<%= employeeSignature %>" alt=""></div>
+                                        <h3 class="bold"><u id="marketing_user"><%= employeeName %></u></h3>
+                                    </div>
+                                    <div>
+                                        <h4>Marketing Staff / CSR</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="footer_header">
+                                    <h3>Checked By:</h3>
+                                </div>
+                                <div class="assignatory">
+                                    <div>
+                                        <div class="signature" id="accounting_head_signature"></div>
+                                        <h3 class="bold"><u>Daisy Cardinez</u></h3>
+                                    </div>
+                                    <div>
+                                        <h4>Accounting Manager</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="footer_header">
+                                    <h3>Approved By:</h3>
+                                </div>
+                                <div class="assignatory">
+                                    <div>
+                                        <div class="signature" id="vice_president_signature"></div>
+                                        <h3 class="bold"><u>Exequiel B. De Vera</u></h3>
+                                    </div>
+                                    <div>
+                                        <h4>Vice-President</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="footer_header">
+                                    <h3>Conformed By:</h3>
+                                </div>
+                                <div class="assignatory">
+                                </div>
+                            </div>
+                        </div>`
+                    </div>
+                </div>
+                <style>
+                    #what_to_print 
+                    {
+                        padding: 123px 38px 38px 76px;
+                        position: relative;
+                        background-size: cover;
+                        width: 816px;
+                        height: 1056px;
+                        border: 3px solid black;
+                        background-color: white;
+                        /* display: none; */
+                    }
+    
+                    #what_to_print .pdf_container
+                    {
+                        position: relative;
+                        height: 889px;
+                    }
+    
+                    #what_to_print h1
+                    {
+                        font-size: 18px;
+                        margin: 0;
+                    }
+    
+                    #what_to_print h2
+                    {
+                        font-size: 16px;
+                        margin: 0;
+                    }
+    
+                    #what_to_print h3
+                    {
+                        font-size: 14px;
+                        margin: 0;
+                    }
+    
+                    #what_to_print h4
+                    {
+                        font-size: 12px;
+                        margin: 0;
+                    }
+    
+                    #what_to_print h5
+                    {
+                        font-size: 10px;
+                        margin: 0;
+                    }
+    
+                    #what_to_print .amount
+                    {
+                        text-align: end;
+                    }
+    
+                    #what_to_print .none
+                    {
+                    color: white;
+                    }
+    
+                    #what_to_print .bold
+                    {
+                    font-weight: bold;
+                    }
+    
+                    #what_to_print .italic
+                    {
+                    font-style: italic;
+                    }
+    
+                    #what_to_print .grid2
+                    {
+                        display: grid;
+                        grid-template-columns: 2fr 1fr;
+                    }
+    
+                    #what_to_print .grid3
+                    {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                    }
+    
+                    #what_to_print .client_copy
+                    {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 227px;
+                        height: 30px;
+                        border: 2px solid black;
+                        font-size: 12px;
+                        font-weight: bold;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+    
+                    #what_to_print .billing_number
+                    {
+                        position: absolute;
+                        top: 20px;
+                        right: 0;
+                        width: 250px;
+                        text-align: center;
+                    }
+    
+                    #what_to_print .pdf_header
+                    {
+                        position: absolute;
+                        top: 0;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        width: calc(100% - 312px);
+                        text-align: center;
+                    }
+    
+                    #what_to_print .customer_summary
+                    {
+                        position: absolute;
+                        top: 91px;
+                        left: 0;
+                        width: 100%;
+                        display: flex;
+                        align-items: start;
+                        justify-content: start;
+                        border: 2px solid black ;
+                    }
+    
+                    #what_to_print .customer
+                    {
+                        width: 50%;
+                        display: flex;
+                        flex-direction: column;
+                    }
+    
+                    #what_to_print .account_summary
+                    {
+                        width: 50%;
+                        display: flex;
+                        flex-direction: column;
+                        border-left: 2px solid black ;
+                        height: 112px;
+                    }
+    
+                    #what_to_print .customer_header,
+                    #what_to_print .account_summary_header
+                    {
+                        text-align: center;
+                        border-bottom: 1px solid black;
+                        background-color: lightgray;
+                    }
+    
+                    #what_to_print .customer_detail
+                    {
+                        padding: 5px;
+                    }
+    
+                    #what_to_print .account_summary_detail
+                    {
+                        padding: 5px 20px;
+                    }
+    
+                    #what_to_print .scope
+                    {
+                        position: absolute;
+                        top: 205px;
+                        left: 0;
+                        width: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 2px solid black ;
+                    }
+    
+                    #what_to_print .scope_detail
+                    {
+                        position: absolute;
+                        top: 224px;
+                        left: 0;
+                        width: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: start;
+                        border: 2px solid black ;
+                        padding-left: 5px;
+                    }
+    
+                    #what_to_print .payable
+                    {
+                        border-bottom: 2px solid black;
+                    }
+    
+                    #what_to_print .account_details
+                    {
+                        position: absolute;
+                        top: 242px;
+                        width: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        border: 1px solid black ;
+                        max-height: 400px;
+                        overflow: hidden;
+                        border-bottom: 2px solid black;
+                    }
+    
+                    #what_to_print .account_details_header
+                    {
+                        width: 100%;
+                        text-align: center;
+                        border-top: 2px solid black;
+                        border-bottom: 2px solid black;
+                        border-left: 1px solid black;
+                        border-right: 1px solid black;
+                        background-color: lightgray;
+                    }
+    
+                    #what_to_print .account_details_detail
+                    {
+                        width: 100%;
+                        height: 425px;
+                        position: relative;
+                    }
+    
+                    #what_to_print .account_details_detail thead
+                    {
+                        overflow: hidden;
+                        font-size: 12px !important;
+                    }
+    
+                    #what_to_print .account_details_detail tbody
+                    {
+                        overflow: hidden;
+                        font-size: 11px !important;
+                    }
+    
+                    #what_to_print .account_details_detail thead tr,
+                    #what_to_print .account_details_detail tbody tr
+                    {
+                        width: 100%;
+                        display: grid;
+                        grid-template-columns: 30px 1fr 30px 40px 60px 60px 85px 85px !important;
+                    }
+    
+                    #what_to_print .account_details_detail th,
+                    #what_to_print .account_details_detail td
+                    {
+                        width: 100% !important;
+                        border-left: 1px solid black;
+                        border-right: 1px solid black;
+                        text-align: center !important;
+                        display: flex;
+                        align-items: center !important;
+                        justify-content: center ;
+                        font-size: 10px !important;
+                        padding: 2px 2px !important;
+                    }
+    
+                    #what_to_print .account_details_detail tr
+                    {
+                        width: 100%;
+                        height: 18px;
+                        border-bottom: 1px solid black;
+                        text-align: center;
+                    }
+    
+                    #what_to_print #remarks_container
+                    {
+                        position: absolute;
+                        top: 641px;
+                        width: 100%;
+                        height: 18px;
+                        border: 2px solid black ;
+                        overflow: hidden;
+                        font-size: 14px;
+                    }
+    
+                    #what_to_print .details
+                    {
+                        position: absolute;
+                        top: 661px;
+                        width: 100%;
+                        height: 70px;
+                        display: grid;
+                        grid-template-columns: 13fr 2fr 2fr;
+                        border: 1px solid black ;
+                        overflow: hidden;
+                        font-size: 14px;
+                    }
+    
+                    #what_to_print .other_details
+                    {
+                        position: absolute;
+                        top: 730px;
+                        width: 90%;
+                        height: 65px;
+                        border: 2px solid black !important;
+                        overflow: hidden;
+                        font-size: 14px;
+                    }
+    
+                    
+                    #what_to_print #qrCode
+                    {
+                        position: absolute;
+                        top: 730px;
+                        right: 0;
+                        width: calc(10% + 2px);
+                        height: 65px;
+                        border: 2px solid black !important;
+                    }
+    
+                    #what_to_print #qrCode img
+                    {
+                        height: 100%;
+                        width: 100%;
+                    }
+                        
+                    #what_to_print .footer
+                    {
+                        margin-top: 750px;
+                        display: grid;
+                        grid-template-columns: 1fr 1fr 1fr 1fr;
+                        border: 1px solid black ;
+                    }
+    
+                    #what_to_print .signature
+                    {
+                        position: relative;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+                    #what_to_print .signature img
+                    {
+                        position: absolute;
+                        width: 100px;
+                    }
+                        
+                    #what_to_print .footer > div
+                    {
+                        display: flex;
+                        flex-direction: column;
+                        text-align: center;
+                    }
+                        
+                    #what_to_print .footer_header
+                    {
+                        background-color: lightgray;
+                        border: 1px solid black ;
+                    }
+    
+                    #what_to_print .assignatory
+                    {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: end;
+                        height: 60px;
+                        border: 1px solid black ;
+                    }
+    
+                </style>
+            </div><br>
+        </div>
+    </div>
+    <script>
+        // Counter for item index
+        let itemIndex = document.getElementById("list_counter").value;
+    
+        // Function to add a new set of input fields
+        function addItem() {
+            itemIndex++;
+            document.getElementById('list_counter').value = itemIndex;
+            const newItem = document.getElementById('item_1').cloneNode(true);
+            newItem.id = `item_${itemIndex}`;
+    
+            // Update the IDs and names based on the index
+            newItem.querySelectorAll('[id^="number"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, itemIndex);
+                element.innerText = itemIndex;
+            });
+    
+            newItem.querySelectorAll('[id^="waste_code"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, itemIndex);
+                element.value = "";
+            });
+    
+            newItem.querySelectorAll('[name^="waste_code"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, itemIndex);
+            });
+    
+            newItem.querySelectorAll('[id^="waste_name"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, itemIndex);
+                element.value = "";
+                element.placeholder = "Type Waste Name...";
+            });
+    
+            newItem.querySelectorAll('[name^="waste_name"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, itemIndex);
+            });
+    
+            newItem.querySelectorAll('[id^="mode"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, itemIndex);
+                element.value = "";
+            });
+    
+            newItem.querySelectorAll('[name^="mode"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, itemIndex);
+            });
+    
+            newItem.querySelectorAll('[id^="unit"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, itemIndex);
+                element.value = "";
+            });
+    
+            newItem.querySelectorAll('[name^="unit"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, itemIndex);
+            });
+    
+            newItem.querySelectorAll('[id^="unit_price"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, itemIndex);
+                element.value = "0";
+            });
+    
+            newItem.querySelectorAll('[name^="unit_price"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, itemIndex);
+            });
+    
+            newItem.querySelectorAll('[id^="vat_calculation"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, itemIndex);
+                element.value = "";
+            });
+    
+            newItem.querySelectorAll('[name^="vat_calculation"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, itemIndex);
+            });
+    
+            newItem.querySelectorAll('[id^="fix_price"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, itemIndex);
+                element.value = "0";
+            });
+    
+            newItem.querySelectorAll('[name^="fix_price"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, itemIndex);
+            });
+    
+            // Append the new item to the container
+            document.getElementById('item-container').appendChild(newItem);
+    
+            // Show the remove button when there's more than one item
+            document.getElementById('remove_item_button').style.display = 'inline-block';
+        }
+    
+        // Function to remove the last set of input fields
+        if (itemIndex <= 1) {
+            document.getElementById('remove_item_button').style.display = 'none';
+        } else {
+            document.getElementById('remove_item_button').style.display = 'block';
+        }
+    
+        function removeItem() {
+            const container = document.getElementById('item-container');
+            const items = container.getElementsByClassName('item');
+            // Ensure there's at least one item before removing
+            if (itemIndex > 1) {
+                container.removeChild(items[itemIndex - 1]);
+                itemIndex--;
+    
+                // Hide the remove button if there's only one item left
+                if (itemIndex === 1) {
+                    document.getElementById('remove_item_button').style.display = 'none';
+                } else {
+                    document.getElementById('remove_item_button').style.display = 'block';
+                }
+            }
+        }
+    
+        // Add event listeners to the buttons
+        document.getElementById('add_item_button').addEventListener('click', addItem);
+        document.getElementById('remove_item_button').addEventListener('click', removeItem);
+    </script>
+    <script>
+        // Counter for item index
+        let tfItemIndex = document.getElementById("tf_counter").value;
+    
+        // Function to add a new set of transportation details
+        function addTransportationDetails() {tf_counter
+            tfItemIndex++;
+            document.getElementById('tf_counter').value = tfItemIndex;
+            const newTFItem = document.getElementById('tf-item_1').cloneNode(true);
+            newTFItem.id = `tf-item_${tfItemIndex}`;
+    
+            // Update the IDs and names based on the index
+            newTFItem.querySelectorAll('[id^="number"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, tfItemIndex);
+                element.innerText = tfItemIndex;
+            });
+    
+            newTFItem.querySelectorAll('[id^="type_of_vehicle"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, tfItemIndex);
+                element.value = "";
+            });
+    
+            newTFItem.querySelectorAll('[name^="type_of_vehicle"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, tfItemIndex);
+            });
+    
+            newTFItem.querySelectorAll('[id^="hauling_area"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, tfItemIndex);
+                element.value = "";
+            });
+    
+            newTFItem.querySelectorAll('[name^="hauling_area"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, tfItemIndex);
+            });
+    
+            newTFItem.querySelectorAll('[id^="tf_mode"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, tfItemIndex);
+                element.value = "";
+            });
+    
+            newTFItem.querySelectorAll('[name^="tf_mode"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, tfItemIndex);
+            });
+    
+            newTFItem.querySelectorAll('[id^="tf_unit"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, tfItemIndex);
+                element.value = "";
+            });
+    
+            newTFItem.querySelectorAll('[name^="tf_unit"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, tfItemIndex);
+            });
+    
+            newTFItem.querySelectorAll('[id^="tf_unit_price"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, tfItemIndex);
+                element.value = "0";
+            });
+    
+            newTFItem.querySelectorAll('[name^="tf_unit_price"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, tfItemIndex);
+            });
+    
+            newTFItem.querySelectorAll('[id^="tf_vat_calculation"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, tfItemIndex);
+                element.value = "";
+            });
+    
+            newTFItem.querySelectorAll('[name^="tf_vat_calculation"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, tfItemIndex);
+            });
+    
+            newTFItem.querySelectorAll('[id^="max_capacity"]').forEach((element) => {
+                element.id = element.id.replace(/(\d+)/, tfItemIndex);
+                element.value = "0";
+            });
+    
+            newTFItem.querySelectorAll('[name^="max_capacity"]').forEach((element) => {
+                element.name = element.name.replace(/(\d+)/, tfItemIndex);
+            });
+    
+            // Append the new transportation details to the container
+            document.getElementById('tf-container').appendChild(newTFItem);
+    
+            // Show the remove button when there's more than one transportation details item
+            document.getElementById('remove_tf_button').style.display = 'inline-block';
+        }
+    
+        if (tfItemIndex <= 1) {
+            document.getElementById('remove_tf_button').style.display = 'none';
+        } else {
+            document.getElementById('remove_tf_button').style.display = 'block';
+        }
+    
+        // Function to remove the last set of transportation details
+        function removeTransportationDetails() {
+            const tfContainer = document.getElementById('tf-container');
+            const tfItems = tfContainer.getElementsByClassName('tf-item');
+    
+            // Ensure there's at least one item before removing
+            if (tfItemIndex > 1) {
+                tfContainer.removeChild(tfItems[tfItemIndex - 1]);
+                tfItemIndex--;
+    
+                // Hide the remove button if there's only one item left
+                if (tfItemIndex === 1) {
+                    document.getElementById('remove_tf_button').style.display = 'none';
+                } else {
+                    document.getElementById('remove_tf_button').style.display = 'block';
+                }
+            }
+        }
+    
+        // Add event listeners to the buttons
+        document.getElementById('add_tf_button').addEventListener('click', addTransportationDetails);
+        document.getElementById('remove_tf_button').addEventListener('click', removeTransportationDetails);
+    </script>
+    <script>
+        function formatNumber(amount) {
+            // Use toLocaleString to add commas as separators for thousands
+            // and toFixed(2) to ensure two decimal places
+            return parseFloat(amount).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2 
+            });
+        }
+
+        // Date and Time Decoder
+        function date_decoder(utcTime) {
+            var utcDate = new Date(utcTime);
+            var options = {
+            year: 'numeric',
+            month: 'long',
+            day: '2-digit',
+            };
+            var utcPlus8Time = utcDate.toLocaleString('en-US', options);
+            
+            return utcPlus8Time;
+        }
+
+        async function generateQuotation() {
+            document.getElementById('what_to_print').style.display = "block";
+            document.getElementById('downloadAndSubmitBtn').style.display = "block";
+            document.getElementById('downloadBtn').style.display = "block";
+            document.getElementById('submitBtn').style.display = "block";
+            document.getElementById('generateQrBtn').style.display = "block";
+            document.getElementById('table_data').innerHTML = "";
+            var counter = 0;
+    
+            // Get the total number of items
+            var itemCount = document.getElementById('list_counter').value;
+    
+            // Loop through each item
+            for (var i = 1; i <= itemCount; i++) {
+                counter++;
+                // Get values from form fields for each item
+                var wasteName = document.getElementById('waste_name' + i).value;
+                var mode = document.getElementById('mode' + i).value;
+                var unit = document.getElementById('unit' + i).value;
+                var unitPrice = document.getElementById('unit_price' + i).value;
+                var vatCalculation = document.getElementById('vat_calculation' + i).value;
+    
+                // Create HTML for a new table row
+                var newRowHtml = `
+                    <tr>
+                        <td>${counter}</td>
+                        <td>${(wasteName.toUpperCase())}</td>
+                        <td>Per</td>
+                        <td>${unit}</td>
+                        <td style="justify-content: right !important; padding-right: 5px !important">${formatNumber(unitPrice)}</td>
+                        <td style="justify-content: right !important; padding-right: 5px !important">${formatNumber(unitPrice)}</td>
+                        <td>${mode}</td>
+                        <td>${vatCalculation}</td>
+                    </tr>`;
+    
+                // Insert the new row HTML into the table
+                document.getElementById('table_data').insertAdjacentHTML('beforeend', newRowHtml);
+            }
+    
+            // Get the total number of items
+            var tfCount = document.getElementById('tf_counter').value;
+            const vehicleTypes = <%- JSON.stringify(vehicleTypes) %>;
+            // Loop through each item
+            for (var i = 1; i <= tfCount; i++) {
+                counter++;
+                // Get values from form fields for each item
+                var type_of_vehicle = document.getElementById('type_of_vehicle' + i).value;
+                var hauling_area = document.getElementById('hauling_area' + i).value;
+                var mode = document.getElementById('tf_mode' + i).value;
+                var unit = document.getElementById('tf_unit' + i).value;
+                var unitPrice = document.getElementById('tf_unit_price' + i).value;
+                var vatCalculation = document.getElementById('tf_vat_calculation' + i).value;
+    
+                // Find the corresponding vehicleType object in the vehicleTypes array
+                var selectedVehicleType = vehicleTypes.find(function (vehicleType) {
+                        return vehicleType.vehicleId === type_of_vehicle;
+                    });
+    
+                // Update type_of_vehicle with the typeOfVehicle property
+                type_of_vehicle = selectedVehicleType ? selectedVehicleType.typeOfVehicle : type_of_vehicle;
+    
+                // Create HTML for a new table row
+                var tfNewRowHtml = `
+                    <tr>
+                        <td>${counter}</td>
+                        <td>${type_of_vehicle} - ${hauling_area.toUpperCase()}</td>
+                        <td>Per</td>
+                        <td>${unit}</td>
+                        <td style="justify-content: right !important; padding-right: 5px !important">${formatNumber(unitPrice)}</td>
+                        <td style="justify-content: right !important; padding-right: 5px !important">${formatNumber(unitPrice)}</td>
+                        <td>${mode}</td>
+                        <td>${vatCalculation}</td>
+                    </tr>
+                    `;
+                // Insert the new row HTML into the table
+                document.getElementById('table_data').insertAdjacentHTML('beforeend', tfNewRowHtml);
+            }
+    
+            for (var i = 1; i <= 20 - (parseInt(itemCount) + parseInt(tfCount)); i++) {
+                var blankRow = `
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>`;
+        
+                // Insert the new row HTML into the table
+                document.getElementById('table_data').insertAdjacentHTML('beforeend', blankRow);
+            }
+    
+            // Get the selected client ID from the dropdown
+            const clientId = document.getElementById('client').value;
+    
+            document.getElementById('date_made_container').innerText = date_decoder(new Date());
+            document.getElementById('valid_until_container').innerText = date_decoder(new Date().setDate(new Date().getDate() + 30)) ;
+            document.getElementById('scope_of_work_input').innerText = document.getElementById('scope_of_work').value;
+            document.getElementById('remarks_input').innerText = document.getElementById('remarks').value;
+            document.getElementById('qlf_form_no_container').innerText = document.getElementById('quotation_no').value;
+            document.getElementById('revision_number_container').innerText = document.getElementById('revision_no').value;
+            document.getElementById('accounting_head_signature').innerHTML = `<img src="/images/CARDINEZ_DAISY.png" alt="">`;
+            document.getElementById('vice_president_signature').innerHTML = `<img src="/images/DE VERA_EXEQUIEL.png" alt="">`;
+            document.getElementById('charge_input').innerText = document.getElementById('terms').value;
+            document.getElementById('buying_input').innerText = document.getElementById('terms2').value;
+    
+            const quotationNo = document.getElementById('quotation_no').value;
+            const revisionNo = document.getElementById('revision_no').value;
+    
+            generateQRCode(quotationNo, revisionNo);
+    
+            function generateQRCode(quotationNo, revisionNo) {
+                const qrCodeValue = `http://192.168.1.85:3000/quotations/validate/${quotationNo}`;
+    
+                // Create a QR code instance
+                const qr = qrcode(0, 'L'); // Error correction level: L (Low)
+    
+                // Set the value of the QR code
+                qr.addData(qrCodeValue);
+                qr.make();
+    
+                // Get the QR code as a data URL
+                const qrDataURL = qr.createDataURL(4); // Scale factor: 4
+    
+                // Display the QR code on your page (replace 'yourQRCodeImageId' with the actual ID)
+                document.getElementById('qrCodeImage').src = qrDataURL;
+            }
+    
+            try {
+            const clientDetails = await fetchClientDetails(clientId);
+            document.getElementById('client_name_container').innerText = clientDetails.clientName;
+            document.getElementById('address_container').innerText = clientDetails.address;
+            document.getElementById('nature_of_business_container').innerText = clientDetails.natureOfBusiness;
+            document.getElementById('contact_number').innerText = clientDetails.contactNumber;
+            document.getElementById('client_name_container2').innerText = clientDetails.billerName;
+            document.getElementById('address_container2').innerText = clientDetails.billerAddress;
+            document.getElementById('contact_number2').innerText = clientDetails.billerContactNumber;
+            document.getElementById('contact_number2').innerText = clientDetails.billerContactNumber;
+    
+            // Update your UI or perform other actions with the fetched client details
+            } catch (error) {
+                // Handle errors if needed
+                console.error('Error fetching client details:', error);
+            }
+        }
+    
+        generateQuotation();
+        // Add event listener to the "Generate Quotation" button
+        document.getElementById('generate_button').addEventListener('click', generateQuotation);
+    
+        function fetchClientDetails(clientId) {
+        // Make a fetch request to your API endpoint to get client details
+        return fetch(`/dashboard/clients/${clientId}`)
+            .then(response => response.json())
+            .catch(error => {
+                console.error('Error fetching client details:', error);
+                throw error; // Re-throw the error to handle it in the calling code if needed
+            });
+        }
+    </script>
+<script>
+    function convertToPDFandDownload() {
+        // Assuming your form has an ID 'quotationForm'
+        const quotationForm = document.querySelector('#quotationForm');
+
+        // Perform form validation before proceeding
+        if (validateForm(quotationForm)) {
+            const element = document.getElementById('what_to_print');
+            const quotation_no = document.getElementById("quotation_no").value;
+            const client = document.getElementById("clientName").value;
+            let modifiedCompanyName = client.replace(/\./g, '');
+
+            const opt = {
+                filename: `${quotation_no} - ${client}`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 10 },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'letter',
+                    orientation: 'portrait',
+                    margin: { top: -10, right: 0, bottom: 0, left: 0 }
+                },
+                pagebreak: { before: ['avoid'] }
+            };
+
+            const marginTop = 0; // Top margin in mm
+            const marginBottom = 0; // Bottom margin in mm
+
+            // Set the page height to account for the top and bottom margins
+            const pageHeight = 279.4 - marginTop - marginBottom;
+
+            // Reset the element's transform style
+            element.style.transform = 'none';
+
+            // Generate the PDF with the adjusted options
+            html2pdf()
+                .set(opt)
+                .from(element)
+                .toContainer()
+                .then(() => {
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        // Call the submit button click event immediately after the PDF is downloaded
+                    });
+                });
+        } else {
+            // Handle the case where the form is not valid
+            alert('Please fill out the form completely before downloading.');
+        }
+    }
+
+    // Function to validate the form
+    function validateForm(form) {
+        // Query all input elements with the 'required' attribute
+        const requiredInputs = form.querySelectorAll('input[required]');
+
+        // Check if all required inputs have a non-empty value
+        for (const input of requiredInputs) {
+            if (input.value.trim() === '') {
+                return false; // Form is not valid
+            }
+            // You can add more specific validation checks for different input types if needed
+        }
+
+        // Add more validation checks as needed
+
+        return true; // Form is valid
+    }
+
+    document.getElementById('downloadBtn').addEventListener('click', convertToPDFandDownload)
+</script>
+</body>
+</html>

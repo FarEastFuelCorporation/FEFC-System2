@@ -1,0 +1,699 @@
+<!-- views/dispatching/dispatching_transactions.ejs -->
+
+<div class="content">
+    <section>
+        <h4>DISPATCHING TRANSACTIONS</h4><br>
+        <% if (successMessage) { %>
+            <div class="alert alert-success" role="alert">
+                <%= successMessage %>
+            </div>
+        <% } %>
+        <% if (errorMessage) { %>
+            <div class="alert alert-danger" role="alert">
+                <%= errorMessage %>
+            </div>
+        <% } %>
+        <div class="table-header">
+            <div class="form-group d-flex">
+                <label for="showEntries">Show entries</label>
+                <select class="form-control" id="showEntries" onchange="changeEntriesPerPage(this)">
+                    <option value="10" <%= entriesPerPage === 10 ? 'selected' : '' %>>10</option>
+                    <option value="25" <%= entriesPerPage === 25 ? 'selected' : '' %>>25</option>
+                    <option value="50" <%= entriesPerPage === 50 ? 'selected' : '' %>>50</option>
+                    <option value="100" <%= entriesPerPage === 100 ? 'selected' : '' %>>100</option>
+                </select>
+            </div>
+            <div class="form-group d-flex">
+                <input type="text" class="form-control" autocomplete="off" placeholder="Search Client" id="searchInput" value="<%= searchQuery %>">
+                <button class="btn btn-success" onclick="performSearch()">
+                    <h6>Search</h6>
+                </button>
+            </div>
+        </div>
+        <div class="accordion" id="accordionExample">
+            <% const startIndex = (currentPage - 1) * entriesPerPage; %>
+            <% paginatedTransactions.forEach((transaction, index) => { %>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= startIndex + index + 1 %>" aria-expanded="true" aria-controls="collapse<%= startIndex + index + 1 %>">
+                            <%= transaction.mtfNumber %> - <%= transaction.haulingDate %> - <%= transaction.haulingTime %> - <%= transaction.Client.clientName %>
+                        </button>
+                    </h2>
+                    <div id="collapse<%= startIndex + index + 1 %>" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <ul class="timeline">
+                                <% if (!transaction.logisticsTransactionExists) { %>
+                                <li>
+                                    <i class="fa fa-solid fa-book bg-blue"></i>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fa fa-clock-o"></i>
+                                            <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                        </span>
+                                        <h3 class="timeline-header fw-bold">
+                                            Booked
+                                        </h3>
+                                        <div class="timeline-body">
+                                            Waste Category: <span><%= transaction.WasteCategory.wasteCategory %></span><br>
+                                            Waste Code: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteCode %></span><br>
+                                            <% if (transaction.WasteCategory.id == 1) { %>
+                                                Waste Type: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteDescription %></span><br>
+                                            <% } %>
+                                            Waste Name: <span><%= transaction.QuotationWaste.wasteName %></span><br>
+                                            Type of Vehicle: <span><%= transaction.QuotationTransportation.VehicleType.typeOfVehicle %></span><br>
+                                            Remarks: <span><%= transaction.remarks %></span><br>
+                                            Booked By: <span><%= transaction.Employee.firstName %> <%= transaction.Employee.lastName %></span><br>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-line"></div>
+                                </li>
+                                <li>
+                                    <i class="fa fa-solid fa-calendar-days bg-yellow"></i>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fa fa-clock-o"></i>
+                                            <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                        </span>
+                                        <h3 class="timeline-header fw-bold">
+                                            For Schedule
+                                        </h3>
+                                        <div class="timeline-body">
+                                            Pending <br>
+                                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#newScheduleModal" onclick="getMTFData('<%= transaction.id %>')">
+                                                <h6>Schedule</h6>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-line"></div>
+                                </li>
+                                <% } else if (transaction.logisticsTransactionExists && !transaction.dispatchLogisticsTransactionExists) { %>
+                                <li>
+                                    <i class="fa fa-solid fa-book bg-blue"></i>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fa fa-clock-o"></i>
+                                            <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                        </span>
+                                        <h3 class="timeline-header fw-bold">
+                                            Booked
+                                        </h3>
+                                        <div class="timeline-body">
+                                            Waste Category: <span><%= transaction.WasteCategory.wasteCategory %></span><br>
+                                            Waste Code: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteCode %></span><br>
+                                            <% if (transaction.WasteCategory.id == 1) { %>
+                                                Waste Type: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteDescription %></span><br>
+                                            <% } %>
+                                            Waste Name: <span><%= transaction.QuotationWaste.wasteName %></span><br>
+                                            Type of Vehicle: <span><%= transaction.QuotationTransportation.VehicleType.typeOfVehicle %></span><br>
+                                            Remarks: <span><%= transaction.remarks %></span><br>
+                                            Booked By: <span><%= transaction.Employee.firstName %> <%= transaction.Employee.lastName %></span><br>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-line"></div>
+                                </li>
+                                <li>
+                                    <i class="fa fa-solid fa-calendar-days bg-blue"></i>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fa fa-clock-o"></i>
+                                            <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                        </span>
+                                        <h3 class="timeline-header fw-bold">
+                                            Scheduled
+                                        </h3>
+                                        <div class="timeline-body">
+                                            Vehicle: <span><%= transaction.LogisticsTransaction[0].vehicleName %></span><br>
+                                            Plate #: <span><%= transaction.LogisticsTransaction[0].plateNumber %></span><br>
+                                            Driver: <span><%= transaction.LogisticsTransaction[0].Driver.firstName %> <%= transaction.LogisticsTransaction[0].Driver.lastName %></span><br>
+                                            Truck Helper: <span><%= transaction.LogisticsTransaction[0].LogisticsTransactionHelper[0].Employee.firstName %> <%= transaction.LogisticsTransaction[0].LogisticsTransactionHelper[0].Employee.lastName %></span><br>
+                                            Departure Date: <span><%= transaction.LogisticsTransaction[0].departureDate %></span><br>
+                                            Departure Time: <span><%= transaction.LogisticsTransaction[0].departureTime %></span><br>
+                                            Scheduled By: <span><%= transaction.LogisticsTransaction[0].Employee.firstName %> <%= transaction.LogisticsTransaction[0].Employee.lastName %></span><br>
+                                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#updateScheduleModal" onclick="updateData('<%= transaction.id %>')">
+                                                <h6>Update</h6>
+                                            </button>
+                                            <button type="button" class="btn btn-danger" onclick="deleteLTFData('<%= transaction.id %>')">
+                                                <h6>Delete</h6>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-line"></div>
+                                </li>
+                                <li>
+                                    <i class="fa fa-solid fa-calendar-check bg-yellow"></i>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fa fa-clock-o"></i>
+                                            <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                        </span>
+                                        <h3 class="timeline-header fw-bold">
+                                            For Dispatch
+                                        </h3>
+                                        <div class="timeline-body">
+                                            Pending <br>
+                                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#dispatchModal" onclick="getLTFData('<%= transaction.id %>')">
+                                                <h6>Dispatch</h6>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-line"></div>
+                                </li>
+                                <% } else if (transaction.logisticsTransactionExists && transaction.dispatchLogisticsTransactionExists) { %>
+                                <li>
+                                    <i class="fa fa-solid fa-book bg-blue"></i>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fa fa-clock-o"></i>
+                                            <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                        </span>
+                                        <h3 class="timeline-header fw-bold">
+                                            Booked
+                                        </h3>
+                                        <div class="timeline-body">
+                                            Waste Category: <span><%= transaction.WasteCategory.wasteCategory %></span><br>
+                                            Waste Code: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteCode %></span><br>
+                                            <% if (transaction.WasteCategory.id == 1) { %>
+                                                Waste Type: <span><%= transaction.QuotationWaste.TypeOfWaste.wasteDescription %></span><br>
+                                            <% } %>
+                                            Waste Name: <span><%= transaction.QuotationWaste.wasteName %></span><br>
+                                            Type of Vehicle: <span><%= transaction.QuotationTransportation.VehicleType.typeOfVehicle %></span><br>
+                                            Remarks: <span><%= transaction.remarks %></span><br>
+                                            Booked By: <span><%= transaction.Employee.firstName %> <%= transaction.Employee.lastName %></span><br>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-line"></div>
+                                </li>
+                                <li>
+                                    <i class="fa fa-solid fa-calendar-days bg-blue"></i>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fa fa-clock-o"></i>
+                                            <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                        </span>
+                                        <h3 class="timeline-header fw-bold">
+                                            Scheduled
+                                        </h3>
+                                        <div class="timeline-body">
+                                            Vehicle: <span><%= transaction.LogisticsTransaction[0].vehicleName %></span><br>
+                                            Plate #: <span><%= transaction.LogisticsTransaction[0].plateNumber %></span><br>
+                                            Driver: <span><%= transaction.LogisticsTransaction[0].Driver.firstName %> <%= transaction.LogisticsTransaction[0].Driver.lastName %></span><br>
+                                            Truck Helper: <span><%= transaction.LogisticsTransaction[0].LogisticsTransactionHelper[0].Employee.firstName %> <%= transaction.LogisticsTransaction[0].LogisticsTransactionHelper[0].Employee.lastName %></span><br>
+                                            Departure Date: <span><%= transaction.LogisticsTransaction[0].departureDate %></span><br>
+                                            Departure Time: <span><%= transaction.LogisticsTransaction[0].departureTime %></span><br>
+                                            Scheduled By: <span><%= transaction.LogisticsTransaction[0].Employee.firstName %> <%= transaction.LogisticsTransaction[0].Employee.lastName %></span><br>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-line"></div>
+                                </li>
+                                <li>
+                                    <i class="fa fa-solid fa-calendar-check bg-blue"></i>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fa fa-clock-o"></i>
+                                            <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                        </span>
+                                        <h3 class="timeline-header fw-bold">
+                                            Dispatched
+                                        </h3>
+                                        <div class="timeline-body">
+                                            Dispatched Date: <span><%= transaction.LogisticsTransaction[0].DispatchLogisticsTransaction[0].dispatchedDate %></span><br>
+                                            Dispatched Time: <span><%= transaction.LogisticsTransaction[0].DispatchLogisticsTransaction[0].dispatchedTime %></span><br>
+                                            Dispatched By: <span><%= transaction.LogisticsTransaction[0].DispatchLogisticsTransaction[0].Employee.firstName %> <%= transaction.LogisticsTransaction[0].DispatchLogisticsTransaction[0].Employee.lastName %></span><br>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-line"></div>
+                                </li>
+                                <li>
+                                    <i class="fa fa-solid fa-truck-ramp-box bg-yellow"></i>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fa fa-clock-o"></i>
+                                            <%= new Date(transaction.createdAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true }) %>
+                                        </span>
+                                        <h3 class="timeline-header fw-bold">
+                                            For Receiving
+                                        </h3>
+                                        <div class="timeline-body">
+                                            Pending <br>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-line"></div>
+                                </li>
+                                <% } %>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+        <!-- Pagination -->
+        <div class="table-pagination">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-end">
+                    <% if (currentPage > 1) { %>
+                        <li class="page-item">
+                            <a class="page-link" href="#" onclick="changePage(<%= currentPage - 1 %>)" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    <% } %>
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <%= i === currentPage ? 'custom-active' : 'custom-non-active' %>">
+                            <a class="page-link <%= i === currentPage ? 'bg-success text-white border-success' : 'text-success' %>" href="#" onclick="changePage(<%= i %>)"><%= i %></a>
+                        </li>
+                    <% } %>
+                    <% if (currentPage < totalPages) { %>
+                        <li class="page-item">
+                            <a class="page-link text-success" href="#" onclick="changePage(<%= currentPage + 1 %>)" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    <% } %>
+                </ul>
+            </nav>
+        </div>
+    </section>
+
+    <form id="newScheduleForm" action="/dispatching_dashboard/new_schedule_transactions" method="post">
+        <div class="modal" id="newScheduleModal" style="height: 100vh; width: 100%;">
+            <div class="modal-dialog  modal-lg" style="width: 100% !important;">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">NEW SCHEDULE FORM</h4>
+                        <button type="button" id="closeNewScheduleBtn" class="close btn btn-danger" data-dismiss="modal">&times;</button>
+                    </div>
+        
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <input type="hidden" name="mtfId" id="mtfId">
+                        <div class="row gap-3 mb-3">
+                            <div class="col">
+                                <label for="departureDate">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                    Departure Date
+                                </label><br>
+                                <input type="date" name="departureDate" id="departureDate" autocomplete="off" class="form-control" required placeholder="Input Client's Nature of Business...">
+                            </div>
+                            <div class="col">
+                                <label for="departureTime">
+                                    <i class="fa-regular fa-clock"></i>
+                                    Departure Time
+                                </label><br>
+                                <input type="time" name="departureTime" id="departureTime" autocomplete="off" class="form-control" required placeholder="Input Client's Contact Number...">
+                            </div>
+                        </div>
+                        <div class="row gap-3 mb-3">
+                            <div class="col">
+                                <label for="plateNumber">
+                                    <i class="fa-solid fa-truck"></i>
+                                    Vehicle
+                                </label><br>
+                                <input class="form-control" list="vehicleList" id="plateNumber" name="plateNumber" required placeholder="Type to search...">
+                                <datalist name="vehicleList" id="vehicleList">
+                                    <option value="" disabled selected>Select Vehicle</option>
+                                    <% vehicles.forEach(vehicle => { %>
+                                        <option value="<%= vehicle.plateNumber %>"><%= vehicle.vehicleName %></option>
+                                    <% }); %>
+                                </datalist>
+                            </div>
+                            <div class="col">
+                                <label for="driverId">
+                                    <i class="fa-solid fa-user"></i>
+                                    Driver
+                                </label><br>
+                                <input class="form-control" list="driverList" name="driverId" id="driverId" autocomplete="off" required placeholder="Type to search...">
+                                <datalist id="driverList">
+                                    <option value="" disabled selected>Select Driver</option>
+                                    <% drivers.forEach(driver => { %>
+                                        <option value="<%= driver.employeeId %>"><%= driver.lastName %>, <%= driver.firstName %></option>
+                                    <% }); %>
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="row gap-3 mb-3">
+                            <div class="col">
+                                <label for="truckHelperId">
+                                    <i class="fa-solid fa-user"></i>
+                                    Truck Helper
+                                </label><br>
+                                <input class="form-control" list="truckHelperList" name="truckHelperId" id="truckHelperId" autocomplete="off" required placeholder="Type to search...">
+                                <datalist id="truckHelperList">
+                                    <option value="" disabled selected>Select Driver</option>
+                                    <% truckHelpers.forEach(truckHelper => { %>
+                                        <option value="<%= truckHelper.employeeId %>"><%= truckHelper.lastName %>, <%= truckHelper.firstName %></option>
+                                    <% }); %>
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="remarks">
+                                    <i class="fa-brands fa-rocketchat"></i>
+                                    Remarks
+                                    </label><br>
+                                <input type="text" name="remarks" id="remarks" autocomplete="off" class="form-control" placeholder="Type your Remarks">
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Modal Footer -->
+                    <div class="modal-footer">
+                        <button type="submit" id="submit_btn" class="btn btn-success">
+                            Submit
+                        </button>
+                        <button type="reset" id="reset" class="btn btn-danger">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <form id="updateScheduleForm" method="post">
+        <div class="modal" id="updateScheduleModal" style="height: 100vh; width: 100%;">
+            <div class="modal-dialog  modal-lg" style="width: 100% !important;">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">UPDATE SCHEDULE FORM</h4>
+                        <button type="button" id="closeUpdateScheduleBtn" class="close btn btn-danger" data-dismiss="modal">&times;</button>
+                    </div>
+        
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <input type="hidden" name="mtfId" id="mtfId">
+                        <input type="hidden" name="logisticsTransactionIdData" id="logisticsTransactionIdData">
+                        <div class="row gap-3 mb-3">
+                            <div class="col">
+                                <label for="departureDate">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                    Departure Date
+                                </label><br>
+                                <input type="date" name="departureDate" id="departureDate" autocomplete="off" class="form-control" required placeholder="Input Client's Nature of Business...">
+                            </div>
+                            <div class="col">
+                                <label for="departureTime">
+                                    <i class="fa-regular fa-clock"></i>
+                                    Departure Time
+                                </label><br>
+                                <input type="time" name="departureTime" id="departureTime" autocomplete="off" class="form-control" required placeholder="Input Client's Contact Number...">
+                            </div>
+                        </div>
+                        <div class="row gap-3 mb-3">
+                            <div class="col">
+                                <label for="plateNumber">
+                                    <i class="fa-solid fa-truck"></i>
+                                    Vehicle
+                                </label><br>
+                                <input class="form-control" list="vehicleList" id="plateNumber" name="plateNumber" required placeholder="Type to search...">
+                                <datalist name="vehicleList" id="vehicleList">
+                                    <option value="" disabled selected>Select Vehicle</option>
+                                    <% vehicles.forEach(vehicle => { %>
+                                        <option value="<%= vehicle.plateNumber %>"><%= vehicle.vehicleName %></option>
+                                    <% }); %>
+                                </datalist>
+                            </div>
+                            <div class="col">
+                                <label for="driverId">
+                                    <i class="fa-solid fa-user"></i>
+                                    Driver
+                                </label><br>
+                                <input class="form-control" list="driverList" name="driverId" id="driverId" autocomplete="off" required placeholder="Type to search...">
+                                <datalist id="driverList">
+                                    <option value="" disabled selected>Select Driver</option>
+                                    <% drivers.forEach(driver => { %>
+                                        <option value="<%= driver.employeeId %>"><%= driver.lastName %>, <%= driver.firstName %></option>
+                                    <% }); %>
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="row gap-3 mb-3">
+                            <div class="col">
+                                <label for="truckHelperId">
+                                    <i class="fa-solid fa-user"></i>
+                                    Truck Helper
+                                </label><br>
+                                <input class="form-control" list="truckHelperList" name="truckHelperId" id="truckHelperId" autocomplete="off" required placeholder="Type to search...">
+                                <datalist id="truckHelperList">
+                                    <option value="" disabled selected>Select Driver</option>
+                                    <% truckHelpers.forEach(truckHelper => { %>
+                                        <option value="<%= truckHelper.employeeId %>"><%= truckHelper.lastName %>, <%= truckHelper.firstName %></option>
+                                    <% }); %>
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="remarks">
+                                    <i class="fa-brands fa-rocketchat"></i>
+                                    Remarks
+                                    </label><br>
+                                <input type="text" name="remarks" id="remarks" autocomplete="off" class="form-control" placeholder="Type your Remarks">
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Modal Footer -->
+                    <div class="modal-footer">
+                        <button type="submit" id="submit_btn" class="btn btn-success">
+                            Update
+                        </button>
+                        <button type="reset" id="reset" class="btn btn-danger">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <form id="dispatchForm" action="/dispatching_dashboard/dispatch_transactions" method="post">
+        <div class="modal" id="dispatchModal" style="height: 100vh; width: 100%;">
+            <div class="modal-dialog  modal-lg" style="width: 100% !important;">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">DISPATCH FORM</h4>
+                        <button type="button" id="closeDispatchBtn" class="close btn btn-danger" data-dismiss="modal">&times;</button>
+                    </div>
+        
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <input type="hidden" name="logisticsTransactionId" id="logisticsTransactionId">
+                        <div class="row gap-3 mb-3">
+                            <div class="col">
+                                <label for="dispatchedDate">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                    Dispatch Date
+                                </label><br>
+                                <input type="date" name="dispatchedDate" id="dispatchedDate" autocomplete="off" class="form-control" required placeholder="Input Client's Nature of Business...">
+                            </div>
+                            <div class="col">
+                                <label for="dispatchedTime">
+                                    <i class="fa-regular fa-clock"></i>
+                                    Dispatch Time
+                                </label><br>
+                                <input type="time" name="dispatchedTime" id="dispatchedTime" autocomplete="off" class="form-control" required placeholder="Input Client's Contact Number...">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="remarks">
+                                    <i class="fa-brands fa-rocketchat"></i>
+                                    Remarks
+                                    </label><br>
+                                <input type="text" name="remarks" id="remarks" autocomplete="off" class="form-control" placeholder="Type your Remarks">
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Modal Footer -->
+                    <div class="modal-footer">
+                        <button type="submit" id="submit_btn" class="btn btn-success">
+                            Submit
+                        </button>
+                        <button type="reset" id="reset" class="btn btn-danger">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    // Function to change the page
+    function changePage(pageNumber) {
+    const entriesPerPage = document.getElementById('showEntries').value;
+
+    // Make an AJAX request to the server with the updated page number
+    fetch(`/dispatching_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+        .then(response => response.text())
+        .then(data => {
+            // Update the content of the container with the new data
+            const section = document.querySelector('section');
+            if (section) {
+                section.innerHTML = data;
+
+                document.querySelector('.content').style.marginLeft = '0';
+                document.querySelector('.content').style.width = '100%';
+                document.querySelector('.content').style.padding = '0%';
+                updateActiveClass()
+            }
+
+            // Update the URL to reflect the current page
+            const newUrl = `/dispatching_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}`;
+            history.pushState({ page: pageNumber, entriesPerPage }, '', newUrl);
+            window.location.reload()
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Handle errors as needed
+        });
+    }
+
+    function changeEntriesPerPage(selectElement) {
+        const selectedValue = selectElement.value;
+        const currentPage = <%= currentPage %> // Get the current page
+        window.location.href = `/dispatching_dashboard/<%= route %>?page=${currentPage}&entriesPerPage=${selectedValue}`;
+    }
+
+    function performSearch() {
+        const searchInput = document.getElementById('searchInput');
+        const searchQuery = searchInput.value.trim(); // Get the trimmed search query
+        const pageNumber = 1;
+        const entriesPerPage = document.getElementById('showEntries').value;
+
+        // Make an AJAX request to the server with the search query and current page
+        fetch(`/dispatching_dashboard/<%= route %>?page=${pageNumber}&entriesPerPage=${entriesPerPage}&search=${searchQuery}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.text())
+        .then(data => {
+            // Update the content of the container with the new data
+            const section = document.querySelector('section');
+            if (section) {
+                section.innerHTML = data;
+
+                document.querySelector('.content').style.marginLeft = '0';
+                document.querySelector('.content').style.width = '100%';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Handle errors as needed
+        });
+    }
+</script>
+<script>
+    document.getElementById("closeNewScheduleBtn").addEventListener("click", () => {
+        document.getElementById("newScheduleModal").style.display = "none";
+        document.querySelector("body").classList.remove("modal-open");
+        document.querySelector("body").style = "";
+        document.querySelector(".modal-backdrop").remove();
+    })
+    document.getElementById("closeUpdateScheduleBtn").addEventListener("click", () => {
+        document.getElementById("updateScheduleModal").style.display = "none";
+        document.querySelector("body").classList.remove("modal-open");
+        document.querySelector("body").style = "";
+        document.querySelector(".modal-backdrop").remove();
+    })
+    document.getElementById("closeDispatchBtn").addEventListener("click", () => {
+        document.getElementById("dispatchModal").style.display = "none";
+        document.querySelector("body").classList.remove("modal-open");
+        document.querySelector("body").style = "";
+        document.querySelector(".modal-backdrop").remove();
+    })
+
+    let logisticsTransactionsData = [];
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            // Make parallel AJAX requests using Promise.all
+            const [ logisticsTransactionsResponse ] = await Promise.all([
+                fetch('/requests/getLogisticsTransaction', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }),
+            ]);
+
+            // Check for errors in marketing transaction response
+            if (!logisticsTransactionsResponse.ok) {
+                throw new Error('Network response was not ok for logistics transactions');
+            }
+
+            // Get JSON data for vehicles marketing transactions and vehicles
+            logisticsTransactionsData = await logisticsTransactionsResponse.json();
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    });
+
+    function getMTFData(MTFData) {
+        const newScheduleModal = document.getElementById("newScheduleModal");
+        newScheduleModal.querySelector("#mtfId").value = MTFData;
+    }
+    function updateData(MTFData) {
+        const updateScheduleModal = document.getElementById("updateScheduleModal");
+        updateScheduleModal.querySelector("#mtfId").value = MTFData;
+        for(let x = 0; x < logisticsTransactionsData.length; x++){
+            if(MTFData == logisticsTransactionsData[x].MarketingTransaction.id){
+                document.getElementById("updateScheduleForm").action = `/dispatching_dashboard/update_schedule_transactions/${logisticsTransactionsData[x].id}`;
+                updateScheduleModal.querySelector("#logisticsTransactionIdData").value = logisticsTransactionsData[x].id;
+                updateScheduleModal.querySelector("#departureDate").value = logisticsTransactionsData[x].departureDate;
+                updateScheduleModal.querySelector("#departureTime").value = logisticsTransactionsData[x].departureTime;
+                updateScheduleModal.querySelector("#plateNumber").value = logisticsTransactionsData[x].plateNumber;
+                updateScheduleModal.querySelector("#driverId").value = logisticsTransactionsData[x].driverId;
+                updateScheduleModal.querySelector("#truckHelperId").value = logisticsTransactionsData[x].LogisticsTransactionHelper[0].truckHelperId;
+                updateScheduleModal.querySelector("#remarks").value = logisticsTransactionsData[x].remarks;
+            }
+        }
+    }
+    function getLTFData(MTFData) {
+        const dispatchModal = document.getElementById("dispatchModal");
+        for(let x = 0; x < logisticsTransactionsData.length; x++){
+            if(MTFData == logisticsTransactionsData[x].MarketingTransaction.id){
+                dispatchModal.querySelector("#logisticsTransactionId").value = logisticsTransactionsData[x].id;
+            }
+        }
+    }
+    function updateLTFData(MTFData) {
+        const updateScheduleModal = document.getElementById("updateScheduleModal");
+        updateScheduleModal.querySelector("#mtfId").value = MTFData;
+        for(let x = 0; x < logisticsTransactionsData.length; x++){
+            if(MTFData == logisticsTransactionsData[x].MarketingTransaction.id){
+                document.getElementById("updateScheduleForm").action = `/dispatching_dashboard/update_schedule_transactions/${logisticsTransactionsData[x].id}`;
+                updateScheduleModal.querySelector("#logisticsTransactionIdData").value = logisticsTransactionsData[x].id;
+                updateScheduleModal.querySelector("#departureDate").value = logisticsTransactionsData[x].departureDate;
+                updateScheduleModal.querySelector("#departureTime").value = logisticsTransactionsData[x].departureTime;
+                updateScheduleModal.querySelector("#plateNumber").value = logisticsTransactionsData[x].plateNumber;
+                updateScheduleModal.querySelector("#driverId").value = logisticsTransactionsData[x].driverId;
+                updateScheduleModal.querySelector("#truckHelperId").value = logisticsTransactionsData[x].LogisticsTransactionHelper[0].truckHelperId;
+                updateScheduleModal.querySelector("#remarks").value = logisticsTransactionsData[x].remarks;
+            }
+        }
+    }
+    function deleteLTFData(logisticsTransactionId) {
+        const confirmation = confirm('Are you sure you want to delete this Transaction?');
+
+        if (confirmation) {
+            fetch(`/dispatching_dashboard/delete_schedule_transactions/${logisticsTransactionId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+        }
+    }
+</script>

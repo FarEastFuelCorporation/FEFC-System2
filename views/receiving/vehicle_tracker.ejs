@@ -1,0 +1,100 @@
+<!-- views/dispatching/vehicle_tracker.ejs -->
+<style>
+    .gm-style-iw-d{
+        font-weight: bold;
+    }
+</style>
+<div class="content">
+    <div id="map" style="height: 100%;"></div>
+</div>
+<script>
+    function initMap() {
+        // Set a static default location
+        const defaultLocation = { lat: 15.100676369593167, lng: 120.95123625210036 };
+
+        // Initialize the map
+        const map = new google.maps.Map(document.getElementById('map'), {
+            center: defaultLocation,
+            zoom: 9,
+        });
+
+        // Add a company marker with red color
+        const companyLocation = defaultLocation;
+        const companyMarker = new google.maps.Marker({
+            position: companyLocation,
+            map: map,
+            label: '0', // Label for the marker
+            title: 'FAR EAST FUEL CORPORATION',
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: 'red',
+                fillOpacity: 1,
+                strokeWeight: 0,
+                scale: 10,
+            },
+        });
+
+        // Create an InfoWindow for the company marker
+        const companyWindow = new google.maps.InfoWindow({
+            content: 'FAR EAST FUEL CORPORATION', // Content inside the InfoWindow
+        });
+
+        // Open the companyWindow when the map loads
+        companyWindow.open(map, companyMarker);
+
+        // Add a vehicle marker with red color
+        const vehicleLocation = { lat: 14.88264408442, lng: 120.8665762539751 };
+        const vehicleMarker = new google.maps.Marker({
+            position: vehicleLocation,
+            map: map,
+            label: 'A', // Label for the marker
+            title: 'RGC418',
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: 'red',
+                fillOpacity: 1,
+                strokeWeight: 0,
+                scale: 10,
+            },
+        });
+
+        // Create an InfoWindow for the vehicle marker
+        const infoWindow = new google.maps.InfoWindow({
+            content: 'RGC418', // Content inside the InfoWindow
+        });
+
+        // Open the infoWindow when the map loads
+        infoWindow.open(map, vehicleMarker);
+
+        // Repeat the process for another vehicle marker
+        const vehicleLocation2 = { lat: 14.533570366278179, lng: 120.98223582325804 };
+        const vehicleMarker2 = new google.maps.Marker({
+            position: vehicleLocation2,
+            map: map,
+            label: 'B', // Label for the marker
+            title: 'NBF2453',
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: 'red',
+                fillOpacity: 1,
+                strokeWeight: 0,
+                scale: 11,
+            },
+        });
+
+        // Create an InfoWindow for the second vehicle marker
+        const infoWindow2 = new google.maps.InfoWindow({
+            content: 'NBF2453',
+        });
+
+        // Open the infoWindow for the second marker when the map loads
+        infoWindow2.open(map, vehicleMarker2);
+    }
+
+    // Trigger the initMap function when the page loads
+    window.onload = initMap;
+</script>
+
+
+<!-- Load the Google Maps JavaScript API with your API key -->
+<script src="https://maps.googleapis.com/maps/api/js?key=<%= apiKey %>&callback=initMap" async defer></script>

@@ -1,0 +1,56 @@
+<!-- views/receiving/receiving_dashboard.ejs -->
+
+<div class="content">
+    <div class="col-xs-12">
+        <section id="dispatching_dashboard">
+            <h4>DASHBOARD</h4><br>
+            <h5>RECEIVING SUMMARY</h5>
+            <div class="row mb-3">
+                <div class="col-9">
+                    <div class="cards dispatching">
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="travel_transactions">0</div>
+                                <div class="card-name">Travel Transactions</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-truck-fast"></i>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="pending_transactions">0</div>
+                                <div class="card-name">Pending Transaction</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-clipboard-list"></i>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="received_transactions">0</div>
+                                <div class="card-name">Received Transactions</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-truck-arrow-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart col-3">
+                    <div style="position: relative; width: calc(100% - 20px);">
+                        <div id="pieChart">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="monthly_transactions">
+            <h5>MONTHLY TRANSACTION COMPARISON</h5>
+            <div class="col-4" style="position: relative; padding: 10px; background-color: #fff; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 8px;">
+                <div id="monthlyBarChart">
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,32 @@
+<!-- views/signup.ejs -->
+
+    <%- include('head.ejs') %>
+    <%- include('navbar.ejs') %>
+    
+    <div class="signup-container">
+        <h2>Sign Up</h2>
+        <form action="/signup" method="post">
+            <% if (locals.error) { %>
+                <div class="alert alert-danger" role="alert">
+                    <%= locals.error %>
+                </div>
+            <% } %>
+            <div class="form-group">
+                <label for="employeeId">Employee ID:</label>
+                <input type="text" id="employeeId" name="employeeId" class="form-control" required autocomplete="off" autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" class="form-control" required autocomplete="off">
+            </div>
+            <a href="/" class="btn btn-primary">Back</a>
+            <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+        </form>
+    </div>
+    <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    </script>
+</html>

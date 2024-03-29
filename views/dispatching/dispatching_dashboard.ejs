@@ -1,0 +1,423 @@
+<!-- views/dispatching/dispatching_dashboard.ejs -->
+
+<div class="content">
+    <div class="col-xs-12">
+        <section id="dispatching_dashboard">
+            <h4>DASHBOARD</h4><br>
+            <h5>DISPATCHING SUMMARY</h5>
+            <div class="row mb-3">
+                <div class="col-9">
+                    <div class="cards dispatching">
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="booked_transactions">0</div>
+                                <div class="card-name">Booked Transactions</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-book-bookmark"></i>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="pending_transactions">0</div>
+                                <div class="card-name">Pending Transaction</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-clipboard-list"></i>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="scheduled_transactions">0</div>
+                                <div class="card-name">Scheduled Transaction</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-regular fa-calendar-check"></i>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="dispatched_transactions">0</div>
+                                <div class="card-name">Dispatched Transactions</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-truck"></i>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="hauled_transactions">0</div>
+                                <div class="card-name">Hauled Transactions</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-truck-ramp-box"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <h5 class="mt-3">VEHICLE SUMMARY</h5>
+                    <div class="cards dispatching">
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="total_vehicle">0</div>
+                                <div class="card-name">Total Vehicles</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-truck-moving"></i>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="on_hauling_vehicle">0</div>
+                                <div class="card-name">On Hauling</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-truck-ramp-box"></i>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="for_maintenance_vehicle">0</div>
+                                <div class="card-name">For Maintenance</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-wrench"></i>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="under_maintenance_vehicle">0</div>
+                                <div class="card-name">Under Maintenance</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-screwdriver-wrench"></i>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="number" id="available_vehicle">0</div>
+                                <div class="card-name">Available Vehicles</div>
+                            </div>
+                            <div class="icon-box">
+                                <i class="fa-solid fa-truck"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart col-3">
+                    <div style="position: relative; width: calc(100% - 20px);">
+                        <div id="pieChart">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="cards col-12 dispatching2">
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="vehicle_type1">0/0</div>
+                            <div class="card-name">4 Wheeler <br>Pick-up</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-truck"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="vehicle_type2">0/0</div>
+                            <div class="card-name">6 Wheeler <br>Closed Van</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-truck"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="vehicle_type3">0/0</div>
+                            <div class="card-name">10 Wheeler <br>Boom Truck</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-truck-moving"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="vehicle_type4">0/0</div>
+                            <div class="card-name">10 Wheeler <br>Dump Truck</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-truck-moving"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="vehicle_type5">0/0</div>
+                            <div class="card-name">10 Wheeler <br>Tanker</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-truck-moving"></i>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="number" id="vehicle_type6">0/0</div>
+                            <div class="card-name">10 Wheeler <br>Wing Van</div>
+                        </div>
+                        <div class="icon-box">
+                            <i class="fa-solid fa-truck-moving"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="monthly_transactions">
+            <h5>MONTHLY TRANSACTION COMPARISON</h5>
+            <div class="col-4" style="position: relative; padding: 10px; background-color: #fff; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 8px;">
+                <div id="monthlyBarChart">
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+<script>
+    let logisticsTransactionsByMonth = [];
+    let vehicles = [];
+    let vehicleLogs = [];
+    let logisticsTransactionCounter = [];
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            // Make parallel AJAX requests using Promise.all
+            const [logisticsTransactionsByMonthResponse, vehiclesResponse, vehicleLogsResponse, logisticsTransactionCounterResponse] = await Promise.all([
+                fetch('/requests/getLogisticsTransactionsByMonth', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }),
+                fetch('/requests/getVehicles', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }),
+                fetch('/requests/getVehicleLogs', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }),
+                fetch('/requests/getLogisticsTransactionCounter', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }),
+            ]);
+
+            if (!logisticsTransactionsByMonthResponse.ok) {
+                throw new Error('Network response was not ok for logistics transactions');
+            }
+
+            if (!vehiclesResponse.ok) {
+                throw new Error('Network response was not ok for vehicles');
+            }
+
+            if (!vehicleLogsResponse.ok) {
+                throw new Error('Network response was not ok for vehicles');
+            }
+
+            if (!logisticsTransactionCounterResponse.ok) {
+                throw new Error('Network response was not ok for logistics transaction counter');
+            }
+
+            logisticsTransactionsByMonth = await logisticsTransactionsByMonthResponse.json();
+            vehicles = await vehiclesResponse.json();
+            vehicleLogs = await vehicleLogsResponse.json();
+            logisticsTransactionCounter = await logisticsTransactionCounterResponse.json();
+            generateBarChart();
+            generatePieChart();
+            generateVehicleCounter();
+            generateCounter();
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    });
+
+    function generatePieChart() {
+        var options = {
+            series: [logisticsTransactionCounter.pending, logisticsTransactionCounter.scheduled, logisticsTransactionCounter.dispatched, 0],
+            chart: {
+                type: 'pie',
+            },
+            plotOptions: {
+                pie: {
+                    startAngle: 0,
+                    endAngle: 360
+                }
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            fill: {
+                type: 'gradient',
+            },
+            legend: {
+                show: true,
+                position: "left",
+                fontSize: '14px',
+                formatter: function (seriesName, opts) {
+                    var seriesValue = opts.w.globals.series[opts.seriesIndex];
+                    var totalValue = opts.w.globals.series.reduce((acc, val) => acc + val, 0);
+                    var percentage = ((seriesValue / totalValue) * 100).toFixed(2);
+                    return `${percentage}% ${seriesName}`;
+                },
+                labels: {
+                    useSeriesColors: false,
+                },
+            },
+            labels: ["Pending", "Scheduled", "Dispatched", "Hauled"],
+            colors: ["#dc3545", "#fd7e14", "#ffc107", "#198754"],
+            responsive: [{
+                breakpoint: 500,
+                options: {
+                    chart: {
+                        width: '100%',
+                        maxHeight: '70%',
+                    },
+                }
+            }]
+        };
+
+        var chart = new ApexCharts(pieChart, options);
+        chart.render();
+    }
+
+    function generateBarChart() {
+        var seriesData = logisticsTransactionsByMonth.pending.map(data => data.count);
+        var labelsData = logisticsTransactionsByMonth.pending.map(data => formatLabel(data.month, data.year));
+
+        var options = {
+            chart: {
+                type: 'bar',
+            },
+            series: [
+                {
+                    name: 'Number of Transactions',
+                    data: seriesData,
+                },
+            ],
+            xaxis: {
+                categories: labelsData,
+                labels: {
+                    datetimeUTC: false,
+                }
+            },
+            yaxis: {
+                min: 0,
+            },
+        };
+
+        var monthlyBarChart = new ApexCharts(document.getElementById('monthlyBarChart'), options);
+        monthlyBarChart.render();
+
+        function formatLabel(monthData, yearData) {
+            const date = new Date(`${yearData}-${monthData}-01`);
+            const month = date.toLocaleDateString('en-US', { month: 'long' });
+            const year = date.getFullYear();
+            return `${month} ${year}`;
+        }
+    }
+
+    function generateVehicleCounter(){
+        const dispatching_dashboard = document.getElementById("dispatching_dashboard");
+        var totalVehicles = 0;
+        var onHauling = 0;
+        var forMaintenance = 0;
+        var underMaintenance = 0;
+        var availableVehicles = 0;
+        var vehicle1 = 0;
+        var vehicle2 = 0;
+        var vehicle3 = 0;
+        var vehicle4 = 0;
+        var vehicle5 = 0;
+        var vehicle6 = 0;
+        var availableVehicle1 = 0;
+        var availableVehicle2 = 0;
+        var availableVehicle3 = 0;
+        var availableVehicle4 = 0;
+        var availableVehicle5 = 0;
+        var availableVehicle6 = 0;
+        vehicles.forEach((data) => {
+            if(data.VehicleType.vehicleId === "V002"){
+                availableVehicle1++
+                vehicle1++
+            } else if(data.VehicleType.vehicleId === "V001"){
+                availableVehicle2++
+                vehicle2++
+            } else if(data.VehicleType.vehicleId === "V006"){
+                availableVehicle3++
+                vehicle3++
+            } else if(data.VehicleType.vehicleId === "V005"){
+                availableVehicle4++
+                vehicle4++
+            } else if(data.VehicleType.vehicleId === "V004"){
+                availableVehicle5++
+                vehicle5++
+            } else if(data.VehicleType.vehicleId === "V003"){
+                availableVehicle6++
+                vehicle6++
+            }
+            availableVehicles++
+            vehicleLogs.forEach((log) => {
+                if(log.plateNumber === data.plateNumber){
+                    if(log.vehicleStatusId != 1){
+                        availableVehicles--;
+                        if(data.VehicleType.vehicleId === "V002"){
+                            availableVehicle1--
+                        } else if(data.VehicleType.vehicleId === "V001"){
+                            availableVehicle2--
+                        } else if(data.VehicleType.vehicleId === "V006"){
+                            availableVehicle3--
+                        } else if(data.VehicleType.vehicleId === "V005"){
+                            availableVehicle4--
+                        } else if(data.VehicleType.vehicleId === "V004"){
+                            availableVehicle5--
+                        } else if(data.VehicleType.vehicleId === "V003"){
+                            availableVehicle6--
+                        }
+                    } 
+                    if(log.vehicleStatusId == 2){
+                        onHauling++
+                    } else if(log.vehicleStatusId == 3){
+                        forMaintenance++
+                    } else if(log.vehicleStatusId == 4){
+                        underMaintenance++
+                    }
+                }
+            })
+        })
+
+        totalVehicles = vehicle1 + vehicle2 + vehicle3 + vehicle4 + vehicle5 + vehicle6;
+        dispatching_dashboard.querySelector("#total_vehicle").innerHTML = totalVehicles;
+        dispatching_dashboard.querySelector("#on_hauling_vehicle").innerHTML = onHauling;
+        dispatching_dashboard.querySelector("#for_maintenance_vehicle").innerHTML = forMaintenance;
+        dispatching_dashboard.querySelector("#under_maintenance_vehicle").innerHTML = underMaintenance;
+        dispatching_dashboard.querySelector("#available_vehicle").innerHTML = availableVehicles;
+        dispatching_dashboard.querySelector("#vehicle_type1").innerHTML = `${availableVehicle1}/${vehicle1}`;
+        dispatching_dashboard.querySelector("#vehicle_type2").innerHTML = `${availableVehicle2}/${vehicle2}`;
+        dispatching_dashboard.querySelector("#vehicle_type3").innerHTML = `${availableVehicle3}/${vehicle3}`;
+        dispatching_dashboard.querySelector("#vehicle_type4").innerHTML = `${availableVehicle4}/${vehicle4}`;
+        dispatching_dashboard.querySelector("#vehicle_type5").innerHTML = `${availableVehicle5}/${vehicle5}`;
+        dispatching_dashboard.querySelector("#vehicle_type6").innerHTML = `${availableVehicle6}/${vehicle6}`;
+    }
+
+    function generateCounter(){
+        const dispatching_dashboard = document.getElementById("dispatching_dashboard");
+        dispatching_dashboard.querySelector("#booked_transactions").innerHTML = logisticsTransactionCounter.pending + logisticsTransactionCounter.scheduled + logisticsTransactionCounter.dispatched;
+        dispatching_dashboard.querySelector("#pending_transactions").innerHTML = logisticsTransactionCounter.pending;
+        dispatching_dashboard.querySelector("#scheduled_transactions").innerHTML = logisticsTransactionCounter.scheduled;
+        dispatching_dashboard.querySelector("#dispatched_transactions").innerHTML = logisticsTransactionCounter.dispatched;
+        dispatching_dashboard.querySelector("#hauled_transactions").innerHTML = 0;
+    }
+</script>

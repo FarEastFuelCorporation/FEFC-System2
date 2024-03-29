@@ -1,0 +1,48 @@
+<!-- views/home.ejs -->
+
+<%- include('head.ejs') %>
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between w-100">
+            <!-- Left side with logo and brand name -->
+            <a href="#" style="height: 40px; background-color: #303030; text-decoration: none;" class="d-flex">
+                <img src="/images/logo.png" alt="Logo">
+                <span>
+                    <h6 class="d-flex align-center ps-2 fw-bold" style="color: #ffbf00; font-family: Times New Roman;">FAR EAST FUEL<br>CORPORATION</h6>
+                </span>
+            </a>
+
+            <!-- Right side with navigation links -->
+            <div class="collapse navbar-collapse" id="navbarScroll">
+                <ul class="navbar-nav" style="margin-left: auto;">
+                    <li class="nav-item">
+                        <a href="/signup" class="nav-link">Sign Up</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/login" class="nav-link">Log In</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+
+
+
+    <div class="container-fluid">
+        <div class="row m-0">
+            <div class="col-12 text-center">
+                <h2>Welcome to FAR EAST FUEL CORPORATION</h2>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    </script>
+</body>
+</html>
