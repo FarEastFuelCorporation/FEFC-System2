@@ -737,6 +737,8 @@ async function getTypeOfWasteController(req, res) {
       .find()
       .toArray();
 
+    console.log(typeOfWastes);
+
     // Get the page number, entries per page, and search query from the query parameters
     const currentPage = parseInt(req.query.page) || 1;
     const entriesPerPage = parseInt(req.query.entriesPerPage) || 10;
