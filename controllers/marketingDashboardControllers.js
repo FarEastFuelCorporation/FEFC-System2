@@ -787,12 +787,14 @@ async function getTypeOfWasteController(req, res) {
 async function getQuotationsController(req, res) {
   try {
     // Fetch all quotations from the database
-    const quotations = await Quotation.findAll({
-      include: [
-        { model: Client, as: "Client" },
-        { model: Employee, as: "Employee" },
-      ],
-    });
+    // const quotations = await Quotation.findAll({
+    //   include: [
+    //     { model: Client, as: "Client" },
+    //     { model: Employee, as: "Employee" },
+    //   ],
+    // });
+
+    var quotations = [];
 
     // Get the page number, entries per page, and search query from the query parameters
     const currentPage = parseInt(req.query.page) || 1;
@@ -849,10 +851,18 @@ async function getNewQuotationController(req, res) {
     var currentPage, totalPages, entriesPerPage, searchQuery;
     const employeeId = req.session.employeeId;
 
-    const employee = await Employee.findOne({ where: { employeeId } });
-    const clients = await Client.findAll();
-    const typesOfWastes = await TypeOfWaste.findAll();
-    const vehicleTypes = await VehicleType.findAll();
+    // const employee = await Employee.findOne({ where: { employeeId } });
+    // const clients = await Client.findAll();
+    // const typesOfWastes = await TypeOfWaste.findAll();
+    // const vehicleTypes = await VehicleType.findAll();
+
+    const database = getDb();
+
+    const clients = await database.collection("clients").find().toArray();
+    console.log(clients);
+    var employee = [];
+    var typesOfWastes = [];
+    var vehicleTypes = [];
 
     // Function to convert a string to proper case
     function toProperCase(str) {
@@ -862,15 +872,18 @@ async function getNewQuotationController(req, res) {
     }
 
     // Apply the function to the employee's first and last names
-    const employeeName = `${toProperCase(employee.firstName)} ${toProperCase(
-      employee.lastName
-    )}`;
-    const employeeSignature = employee.picture.replace(/\.jpg$/, ".png");
+    // const employeeName = `${toProperCase(employee.firstName)} ${toProperCase(
+    //   employee.lastName
+    // )}`;
+    // const employeeSignature = employee.picture.replace(/\.jpg$/, ".png");
+
+    var employeeName;
+    var employeeSignature;
 
     // Sorting the clients array by clientName
     clients.sort((clientA, clientB) => {
-      const nameA = clientA.clientName.toUpperCase(); // Convert names to uppercase for case-insensitive sorting
-      const nameB = clientB.clientName.toUpperCase();
+      const nameA = clientA["CLIENT NAME"].toUpperCase(); // Convert names to uppercase for case-insensitive sorting
+      const nameB = clientB["CLIENT NAME"].toUpperCase();
 
       if (nameA < nameB) {
         return -1;
@@ -880,6 +893,8 @@ async function getNewQuotationController(req, res) {
       }
       return 0; // Names are equal
     });
+
+    console.log(clients);
 
     // Render the dashboard view with data
     const viewsData = {
