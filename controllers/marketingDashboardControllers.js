@@ -894,8 +894,6 @@ async function getNewQuotationController(req, res) {
       return 0; // Names are equal
     });
 
-    console.log(clients);
-
     // Render the dashboard view with data
     const viewsData = {
       pageTitle: "Marketing User - New Quotation Form",
