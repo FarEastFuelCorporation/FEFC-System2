@@ -499,7 +499,6 @@ async function updateBookedTransactionsController(req, res) {
 async function delete_booked_transactionsController(req, res) {
   try {
     const id = req.params.id;
-    console.log(id);
     // Update the MarketingTransaction status
     const marketingTransaction = await MarketingTransaction.findOne({
       where: {
@@ -737,7 +736,6 @@ async function getTypeOfWasteController(req, res) {
       .find()
       .toArray();
 
-    console.log(typeOfWastes);
 
     // Get the page number, entries per page, and search query from the query parameters
     const currentPage = parseInt(req.query.page) || 1;
@@ -859,7 +857,6 @@ async function getNewQuotationController(req, res) {
     const database = getDb();
 
     const clients = await database.collection("clients").find().toArray();
-    console.log(clients);
     var employee = [];
     var typesOfWastes = [];
     var vehicleTypes = [];
@@ -945,7 +942,7 @@ async function postNewQuotationController(req, res) {
       remarks: remarks,
       submittedBy: userId,
     });
-    console.log(quotation.quotationId);
+
     // Process dynamic fields
     for (let i = 1; i <= list_counter; i++) {
       const waste_code = req.body[`waste_code${i}`];
